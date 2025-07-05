@@ -1,0 +1,277 @@
+name: UltimateItemsAdder
+version: 2.0.0
+description: Ultimate Custom Items Plugin for Minecraft 1.21.5
+author: YourName
+website: https://github.com/yourname/ultimateitemsadder
+main: com.ultimateitemsadder.UltimateItemsAdder
+api-version: 1.21
+depend: []
+softdepend: [Vault, PlaceholderAPI, WorldGuard, MythicMobs]
+
+commands:
+  ultimateitems:
+    description: Ultimate Items Ana Komut
+    usage: /<command> <subcommand>
+    permission: ultimateitems.use
+    aliases: [ui, customitems]
+    
+permissions:
+  # Ana İzinler
+  ultimateitems.*:
+    description: Tüm Ultimate Items izinleri
+    children:
+      ultimateitems.admin: true
+      ultimateitems.use: true
+      ultimateitems.give: true
+      ultimateitems.list: true
+      ultimateitems.info: true
+      ultimateitems.create: true
+      ultimateitems.edit: true
+      ultimateitems.delete: true
+      ultimateitems.test: true
+    default: op
+    
+  ultimateitems.admin:
+    description: Admin yetkisi (tüm komutlar)
+    children:
+      ultimateitems.use: true
+      ultimateitems.give: true
+      ultimateitems.list: true
+      ultimateitems.info: true
+      ultimateitems.create: true
+      ultimateitems.edit: true
+      ultimateitems.delete: true
+      ultimateitems.reload: true
+      ultimateitems.pack: true
+      ultimateitems.debug: true
+      ultimateitems.backup: true
+      ultimateitems.restore: true
+      ultimateitems.export: true
+      ultimateitems.import: true
+      ultimateitems.test: true
+    default: op
+    
+  ultimateitems.use:
+    description: Temel kullanım izni
+    default: true
+    
+  ultimateitems.give:
+    description: Item verme izni
+    default: op
+    
+  ultimateitems.list:
+    description: Item listeleme izni
+    default: true
+    
+  ultimateitems.info:
+    description: Item bilgisi görme izni
+    default: true
+    
+  ultimateitems.create:
+    description: Item oluşturma izni
+    default: op
+    
+  ultimateitems.edit:
+    description: Item düzenleme izni
+    default: op
+    
+  ultimateitems.delete:
+    description: Item silme izni
+    default: op
+    
+  ultimateitems.reload:
+    description: Plugin reload izni
+    default: op
+    
+  ultimateitems.pack:
+    description: Resource pack yönetim izni
+    default: op
+    
+  ultimateitems.debug:
+    description: Debug modu izni
+    default: op
+    
+  ultimateitems.backup:
+    description: Yedekleme izni
+    default: op
+    
+  ultimateitems.restore:
+    description: Geri yükleme izni
+    default: op
+    
+  ultimateitems.export:
+    description: Dışa aktarma izni
+    default: op
+    
+  ultimateitems.import:
+    description: İçe aktarma izni
+    default: op
+    
+  ultimateitems.test:
+    description: Test komutları izni
+    default: op
+    
+  # Item İzinleri
+  ultimateitems.items.*:
+    description: Tüm item izinleri
+    children:
+      ultimateitems.flame_sword: true
+      ultimateitems.ice_bow: true
+      ultimateitems.magic_staff: true
+      ultimateitems.dragon_helmet: true
+      ultimateitems.miners_pickaxe: true
+      ultimateitems.magic_apple: true
+      ultimateitems.healing_potion: true
+      ultimateitems.fire_gem: true
+    default: true
+    
+  ultimateitems.flame_sword:
+    description: Ateş Kılıcı kullanım izni
+    default: true
+    
+  ultimateitems.ice_bow:
+    description: Buz Yayı kullanım izni
+    default: true
+    
+  ultimateitems.magic_staff:
+    description: Sihir Asası kullanım izni
+    default: true
+    
+  ultimateitems.dragon_helmet:
+    description: Ejder Miğferi kullanım izni
+    default: true
+    
+  ultimateitems.miners_pickaxe:
+    description: Madenci Kazması kullanım izni
+    default: true
+    
+  ultimateitems.magic_apple:
+    description: Sihirli Elma kullanım izni
+    default: true
+    
+  ultimateitems.healing_potion:
+    description: İyileştirme İksiri kullanım izni
+    default: true
+    
+  ultimateitems.fire_gem:
+    description: Ateş Mücevheri kullanım izni
+    default: true
+    
+  # Crafting İzinleri
+  ultimateitems.craft.*:
+    description: Tüm crafting izinleri
+    children:
+      ultimateitems.craft.weapons: true
+      ultimateitems.craft.armor: true
+      ultimateitems.craft.tools: true
+      ultimateitems.craft.food: true
+      ultimateitems.craft.potions: true
+      ultimateitems.craft.gems: true
+    default: true
+    
+  ultimateitems.craft.weapons:
+    description: Silah crafting izni
+    children:
+      ultimateitems.craft.flame_sword: true
+      ultimateitems.craft.ice_bow: true
+      ultimateitems.craft.magic_staff: true
+    default: true
+    
+  ultimateitems.craft.armor:
+    description: Zırh crafting izni
+    children:
+      ultimateitems.craft.dragon_helmet: true
+    default: true
+    
+  ultimateitems.craft.tools:
+    description: Araç crafting izni
+    children:
+      ultimateitems.craft.miners_pickaxe: true
+    default: true
+    
+  ultimateitems.craft.food:
+    description: Yiyecek crafting izni
+    children:
+      ultimateitems.craft.magic_apple: true
+    default: true
+    
+  ultimateitems.craft.potions:
+    description: İksir brewing izni
+    children:
+      ultimateitems.brew.healing_potion: true
+    default: true
+    
+  ultimateitems.craft.gems:
+    description: Mücevher crafting izni
+    children:
+      ultimateitems.craft.fire_gem: true
+    default: true
+    
+  # Yetenek İzinleri
+  ultimateitems.abilities.*:
+    description: Tüm yetenek izinleri
+    children:
+      ultimateitems.abilities.fire: true
+      ultimateitems.abilities.ice: true
+      ultimateitems.abilities.magic: true
+    default: true
+    
+  ultimateitems.abilities.fire:
+    description: Ateş yetenekleri izni
+    children:
+      ultimateitems.ability.fire_strike: true
+      ultimateitems.ability.flame_aura: true
+      ultimateitems.ability.fire_immunity: true
+    default: true
+    
+  ultimateitems.abilities.ice:
+    description: Buz yetenekleri izni
+    children:
+      ultimateitems.ability.ice_shot: true
+      ultimateitems.ability.freeze_target: true
+    default: true
+    
+  ultimateitems.abilities.magic:
+    description: Sihir yetenekleri izni
+    children:
+      ultimateitems.ability.lightning_strike: true
+      ultimateitems.ability.teleport: true
+      ultimateitems.ability.heal_self: true
+    default: true
+    
+  # Bireysel Yetenek İzinleri
+  ultimateitems.ability.fire_strike:
+    description: Ateş Çarpışı yeteneği izni
+    default: true
+    
+  ultimateitems.ability.flame_aura:
+    description: Alev Aurası yeteneği izni
+    default: true
+    
+  ultimateitems.ability.fire_immunity:
+    description: Ateş Bağışıklığı yeteneği izni
+    default: true
+    
+  ultimateitems.ability.ice_shot:
+    description: Buz Oku yeteneği izni
+    default: true
+    
+  ultimateitems.ability.freeze_target:
+    description: Hedef Dondurma yeteneği izni
+    default: true
+    
+  ultimateitems.ability.lightning_strike:
+    description: Şimşek Çarpması yeteneği izni
+    default: true
+    
+  ultimateitems.ability.teleport:
+    description: Işınlanma yeteneği izni
+    default: true
+    
+  ultimateitems.ability.heal_self:
+    description: Kendini İyileştir yeteneği izni
+    default: true
+    
+  ultimateitems.ability.fire_ice_explosion:
+    description: Ateş-Buz Patlaması yeteneği izni
+    default: true

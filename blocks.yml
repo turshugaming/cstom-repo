@@ -1,0 +1,377 @@
+# UltimateItemsAdder - Custom Blocks
+# 1.21.5 Minecraft Uyumlu
+
+# Madencilik Blokları
+mythril_ore:
+  enabled: true
+  displayName: '&b&lMithril Cevheri'
+  material: STONE
+  texture: 'mythril_ore'
+  model: 'mythril_ore'
+  customModelData: 7001
+  rarity: 'RARE'
+  category: 'ores'
+  blockType: 'ORE'
+  hardness: 5.0
+  resistance: 6.0
+  harvest_level: 3
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'mythril_ingot'
+      amount: 1
+      chance: 100.0
+    - item: 'mythril_dust'
+      amount: 2
+      chance: 50.0
+  light_level: 8
+  sounds:
+    break: 'BLOCK_STONE_BREAK'
+    place: 'BLOCK_STONE_PLACE'
+    step: 'BLOCK_STONE_STEP'
+  particles:
+    break: 'BLOCK_CRACK'
+    place: 'CLOUD'
+  generate_in_world: true
+  generation:
+    worlds:
+      - 'world'
+      - 'world_nether'
+    veins_per_chunk: 3
+    vein_size: 5
+    min_height: 5
+    max_height: 30
+    biomes:
+      - 'MOUNTAINS'
+      - 'CAVES'
+
+adamantium_ore:
+  enabled: true
+  displayName: '&8&lAdamantium Cevheri'
+  material: DEEPSLATE
+  texture: 'adamantium_ore'
+  model: 'adamantium_ore'
+  customModelData: 7002
+  rarity: 'EPIC'
+  category: 'ores'
+  blockType: 'ORE'
+  hardness: 8.0
+  resistance: 12.0
+  harvest_level: 4
+  harvest_tool: 'PICKAXE'
+  required_enchantment: 'SILK_TOUCH'
+  drops:
+    - item: 'adamantium_raw'
+      amount: 1
+      chance: 100.0
+  generate_in_world: true
+  generation:
+    worlds:
+      - 'world'
+    veins_per_chunk: 1
+    vein_size: 3
+    min_height: -64
+    max_height: 0
+    requires_adjacent: 'LAVA'
+
+# Yapı Blokları
+mythril_block:
+  enabled: true
+  displayName: '&b&lMithril Blok'
+  material: IRON_BLOCK
+  texture: 'mythril_block'
+  model: 'mythril_block'
+  customModelData: 7003
+  rarity: 'RARE'
+  category: 'building'
+  blockType: 'STORAGE'
+  hardness: 6.0
+  resistance: 8.0
+  harvest_level: 3
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'mythril_block'
+      amount: 1
+      chance: 100.0
+  light_level: 10
+  beacon_base: true
+  sounds:
+    break: 'BLOCK_METAL_BREAK'
+    place: 'BLOCK_METAL_PLACE'
+    step: 'BLOCK_METAL_STEP'
+
+enchanted_obsidian:
+  enabled: true
+  displayName: '&5&lBüyülü Obsidyen'
+  material: OBSIDIAN
+  texture: 'enchanted_obsidian'
+  model: 'enchanted_obsidian'
+  customModelData: 7004
+  rarity: 'LEGENDARY'
+  category: 'building'
+  blockType: 'SPECIAL'
+  hardness: 25.0
+  resistance: 1000.0
+  harvest_level: 4
+  harvest_tool: 'PICKAXE'
+  blast_resistant: true
+  drops:
+    - item: 'enchanted_obsidian'
+      amount: 1
+      chance: 100.0
+  light_level: 15
+  particles:
+    idle: 'ENCHANTMENT_TABLE:3:0.5:0.5:0.5'
+  sounds:
+    break: 'BLOCK_GLASS_BREAK'
+    place: 'BLOCK_GLASS_PLACE'
+
+# Fonksiyonel Bloklar
+magic_workbench:
+  enabled: true
+  displayName: '&d&lSihir Tezgahı'
+  material: CRAFTING_TABLE
+  texture: 'magic_workbench'
+  model: 'magic_workbench'
+  customModelData: 7005
+  rarity: 'EPIC'
+  category: 'functional'
+  blockType: 'WORKSTATION'
+  hardness: 3.0
+  resistance: 3.0
+  harvest_tool: 'AXE'
+  drops:
+    - item: 'magic_workbench'
+      amount: 1
+      chance: 100.0
+  gui_enabled: true
+  gui_size: 54
+  gui_title: '&d&lSihir Tezgahı'
+  interactions:
+    right_click: 'open_gui'
+  light_level: 8
+  particles:
+    idle: 'ENCHANTMENT_TABLE:2:1.0:0.5:1.0'
+  sounds:
+    interact: 'BLOCK_ENCHANTMENT_TABLE_USE'
+
+alchemist_station:
+  enabled: true
+  displayName: '&6&lSimya İstasyonu'
+  material: BREWING_STAND
+  texture: 'alchemist_station'
+  model: 'alchemist_station'
+  customModelData: 7006
+  rarity: 'RARE'
+  category: 'functional'
+  blockType: 'BREWING'
+  hardness: 2.5
+  resistance: 2.5
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'alchemist_station'
+      amount: 1
+      chance: 100.0
+  brewing_recipes:
+    - 'advanced_healing_potion'
+    - 'mana_potion'
+    - 'strength_elixir'
+  light_level: 6
+  particles:
+    idle: 'FLAME:1:0.5:0.5:0.5'
+  sounds:
+    interact: 'BLOCK_BREWING_STAND_BREW'
+
+# Dekoratif Bloklar
+glowing_crystal:
+  enabled: true
+  displayName: '&e&lParlayan Kristal'
+  material: GLOWSTONE
+  texture: 'glowing_crystal'
+  model: 'glowing_crystal'
+  customModelData: 7007
+  rarity: 'UNCOMMON'
+  category: 'decorative'
+  blockType: 'LIGHT'
+  hardness: 1.5
+  resistance: 1.5
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'glowing_crystal'
+      amount: 1
+      chance: 100.0
+    - item: 'crystal_dust'
+      amount: 3
+      chance: 75.0
+  light_level: 15
+  particles:
+    idle: 'GLOW:5:1.0:1.0:1.0'
+  sounds:
+    break: 'BLOCK_GLASS_BREAK'
+    place: 'BLOCK_GLASS_PLACE'
+
+ancient_rune_stone:
+  enabled: true
+  displayName: '&9&lAntik Rün Taşı'
+  material: CHISELED_STONE_BRICKS
+  texture: 'ancient_rune_stone'
+  model: 'ancient_rune_stone'
+  customModelData: 7008
+  rarity: 'LEGENDARY'
+  category: 'decorative'
+  blockType: 'ANCIENT'
+  hardness: 4.0
+  resistance: 5.0
+  harvest_level: 2
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'ancient_rune_stone'
+      amount: 1
+      chance: 100.0
+  light_level: 5
+  particles:
+    idle: 'ENCHANTMENT_TABLE:1:0.5:0.5:0.5'
+  rune_effects:
+    - 'STRENGTH:300:1'
+    - 'SPEED:300:1'
+  activation_radius: 10.0
+  sounds:
+    activate: 'BLOCK_ENCHANTMENT_TABLE_USE'
+
+# Teknolojik Bloklar
+energy_generator:
+  enabled: true
+  displayName: '&c&lEnerji Üretici'
+  material: FURNACE
+  texture: 'energy_generator'
+  model: 'energy_generator'
+  customModelData: 7009
+  rarity: 'EPIC'
+  category: 'technology'
+  blockType: 'GENERATOR'
+  hardness: 5.0
+  resistance: 6.0
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'energy_generator'
+      amount: 1
+      chance: 100.0
+  energy_production: 100
+  fuel_types:
+    - 'COAL'
+    - 'LAVA_BUCKET'
+    - 'fire_gem'
+  gui_enabled: true
+  gui_size: 27
+  gui_title: '&c&lEnerji Üretici'
+  light_level: 12
+  particles:
+    working: 'FLAME:5:1.0:1.0:1.0'
+  sounds:
+    working: 'BLOCK_FURNACE_FIRE_CRACKLE'
+
+teleporter_pad:
+  enabled: true
+  displayName: '&5&lIşınlayıcı Platform'
+  material: END_PORTAL_FRAME
+  texture: 'teleporter_pad'
+  model: 'teleporter_pad'
+  customModelData: 7010
+  rarity: 'LEGENDARY'
+  category: 'technology'
+  blockType: 'TELEPORTER'
+  hardness: 10.0
+  resistance: 15.0
+  harvest_level: 4
+  harvest_tool: 'PICKAXE'
+  drops:
+    - item: 'teleporter_pad'
+      amount: 1
+      chance: 100.0
+  energy_cost: 500
+  max_distance: 1000
+  teleport_delay: 60
+  light_level: 15
+  particles:
+    idle: 'PORTAL:10:2.0:0.5:2.0'
+    teleport: 'EXPLOSION_LARGE:5:2.0:2.0:2.0'
+  sounds:
+    teleport: 'ENTITY_ENDERMAN_TELEPORT'
+  interactions:
+    step_on: 'teleport'
+
+# Çiftçilik Blokları
+fertile_soil:
+  enabled: true
+  displayName: '&2&lVerimli Toprak'
+  material: FARMLAND
+  texture: 'fertile_soil'
+  model: 'fertile_soil'
+  customModelData: 7011
+  rarity: 'UNCOMMON'
+  category: 'farming'
+  blockType: 'SOIL'
+  hardness: 0.8
+  resistance: 0.8
+  harvest_tool: 'SHOVEL'
+  drops:
+    - item: 'fertile_soil'
+      amount: 1
+      chance: 100.0
+  growth_multiplier: 2.0
+  auto_hydrate: true
+  crop_yield_bonus: 1
+  particles:
+    idle: 'HAPPY_VILLAGER:1:0.5:0.1:0.5'
+  sounds:
+    step: 'BLOCK_GRASS_STEP'
+
+magic_crop:
+  enabled: true
+  displayName: '&6&lSihirli Mahsul'
+  material: WHEAT
+  texture: 'magic_crop'
+  model: 'magic_crop'
+  customModelData: 7012
+  rarity: 'RARE'
+  category: 'farming'
+  blockType: 'CROP'
+  growth_stages: 8
+  growth_time: 300
+  harvest_tool: 'HAND'
+  drops:
+    - item: 'magic_wheat'
+      amount: 2
+      chance: 100.0
+    - item: 'magic_seeds'
+      amount: 1
+      chance: 50.0
+  requires_soil: 'fertile_soil'
+  light_requirement: 12
+  particles:
+    growing: 'HAPPY_VILLAGER:1:0.5:0.5:0.5'
+  sounds:
+    harvest: 'BLOCK_CROP_BREAK'
+
+# Blok Grupları
+ores:
+  enabled: true
+  blocks:
+    - 'mythril_ore'
+    - 'adamantium_ore'
+  permission: 'ultimateitems.blocks.ores'
+
+building_blocks:
+  enabled: true
+  blocks:
+    - 'mythril_block'
+    - 'enchanted_obsidian'
+  permission: 'ultimateitems.blocks.building'
+
+functional_blocks:
+  enabled: true
+  blocks:
+    - 'magic_workbench'
+    - 'alchemist_station'
+    - 'energy_generator'
+    - 'teleporter_pad'
+  permission: 'ultimateitems.blocks.functional'

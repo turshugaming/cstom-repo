@@ -1,0 +1,284 @@
+# UltimateItemsAdder - Custom Abilities
+# 1.21.5 Minecraft Uyumlu
+
+# Ateş Yetenekleri
+fire_strike:
+  enabled: true
+  name: '&c&lAteş Çarpışı'
+  description: 'Hedefi yakarak ekstra hasar verir'
+  type: 'ACTIVE'
+  trigger: 'RIGHT_CLICK'
+  cooldown: 10
+  manaCost: 20
+  range: 5.0
+  damage: 8.0
+  radius: 2.0
+  duration: 100
+  effects:
+    - 'FIRE:100:1'
+  particles:
+    - 'FLAME:20:1.0:1.0:1.0'
+    - 'LAVA:10:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_BLAZE_SHOOT'
+  message: '&c🔥 Ateş Çarpışı kullandınız!'
+  requirements:
+    level: 15
+  permission: 'ultimateitems.ability.fire_strike'
+
+flame_aura:
+  enabled: true
+  name: '&6&lAlev Aurası'
+  description: 'Etrafınızdaki düşmanları yakarak hasar verir'
+  type: 'PASSIVE'
+  trigger: 'CONSTANT'
+  cooldown: 0
+  range: 3.0
+  damage: 2.0
+  tick_interval: 20
+  effects:
+    - 'FIRE:40:0'
+  particles:
+    - 'FLAME:5:2.0:0.5:2.0'
+  sounds:
+    - 'BLOCK_FIRE_AMBIENT'
+  message: '&6🔥 Alev Aurası aktif!'
+
+# Buz Yetenekleri
+ice_shot:
+  enabled: true
+  name: '&b&lBuz Oku'
+  description: 'Buzdan ok fırlatır ve hedefi dondurur'
+  type: 'ACTIVE'
+  trigger: 'SHOOT'
+  cooldown: 5
+  manaCost: 15
+  range: 32.0
+  damage: 10.0
+  projectile_speed: 2.0
+  effects:
+    - 'SLOWNESS:120:2'
+    - 'WEAKNESS:80:1'
+  particles:
+    - 'SNOWFLAKE:30:1.0:1.0:1.0'
+    - 'CLOUD:15:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_SNOW_GOLEM_SHOOT'
+  message: '&b❄ Buz Oku fırlattınız!'
+  permission: 'ultimateitems.ability.ice_shot'
+
+freeze_target:
+  enabled: true
+  name: '&f&lHedef Dondurma'
+  description: 'Hedefinizi dondurup hareket edemez hale getirir'
+  type: 'ACTIVE'
+  trigger: 'LEFT_CLICK'
+  cooldown: 15
+  manaCost: 25
+  range: 8.0
+  duration: 100
+  effects:
+    - 'SLOWNESS:100:10'
+    - 'JUMP:100:-10'
+  particles:
+    - 'SNOWFLAKE:50:2.0:2.0:2.0'
+    - 'BLOCK_CRACK:20:1.0:1.0:1.0'
+  sounds:
+    - 'BLOCK_GLASS_BREAK'
+  message: '&f❄ Hedefi dondurdunuz!'
+
+# Sihir Yetenekleri
+lightning_strike:
+  enabled: true
+  name: '&e&lŞimşek Çarpması'
+  description: 'Hedefe şimşek düşürür'
+  type: 'ACTIVE'
+  trigger: 'RIGHT_CLICK'
+  cooldown: 20
+  manaCost: 40
+  range: 16.0
+  damage: 15.0
+  radius: 3.0
+  effects:
+    - 'BLINDNESS:60:1'
+    - 'WEAKNESS:100:2'
+  particles:
+    - 'ELECTRIC_SPARK:100:2.0:3.0:2.0'
+    - 'FLASH:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_LIGHTNING_BOLT_THUNDER'
+  message: '&e⚡ Şimşek çağırdınız!'
+  permission: 'ultimateitems.ability.lightning_strike'
+
+teleport:
+  enabled: true
+  name: '&5&lIşınlanma'
+  description: 'Bakığınız yere ışınlanır'
+  type: 'ACTIVE'
+  trigger: 'SHIFT_RIGHT_CLICK'
+  cooldown: 30
+  manaCost: 50
+  range: 16.0
+  particles:
+    - 'PORTAL:30:1.0:1.0:1.0'
+    - 'ENCHANTMENT_TABLE:20:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_ENDERMAN_TELEPORT'
+  message: '&5✨ Işınlandınız!'
+  requirements:
+    level: 25
+  permission: 'ultimateitems.ability.teleport'
+
+heal_self:
+  enabled: true
+  name: '&a&lKendini İyileştir'
+  description: 'Canınızı yeniler'
+  type: 'ACTIVE'
+  trigger: 'SNEAK_RIGHT_CLICK'
+  cooldown: 60
+  manaCost: 30
+  heal_amount: 10.0
+  effects:
+    - 'REGENERATION:120:2'
+  particles:
+    - 'HEART:20:1.0:1.0:1.0'
+    - 'HAPPY_VILLAGER:15:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_PLAYER_LEVELUP'
+  message: '&a❤ Kendinizi iyileştirdiniz!'
+
+# Özel Yetenekler
+fire_immunity:
+  enabled: true
+  name: '&c&lAteş Bağışıklığı'
+  description: 'Ateş ve lav hasarından etkilenmezsiniz'
+  type: 'PASSIVE'
+  trigger: 'PERMANENT'
+  effects:
+    - 'FIRE_RESISTANCE:999999:1'
+  message: '&c🔥 Ateşe karşı bağışıksınız!'
+
+auto_smelt:
+  enabled: true
+  name: '&e&lOtomatik Eritme'
+  description: 'Çıkardığınız madenleri otomatik eritir'
+  type: 'PASSIVE'
+  trigger: 'BLOCK_BREAK'
+  message: '&e🔥 Maden otomatik eritildi!'
+  auto_smelt_blocks:
+    - 'IRON_ORE'
+    - 'GOLD_ORE'
+    - 'COPPER_ORE'
+
+vein_miner:
+  enabled: true
+  name: '&b&lDamar Madenciliği'
+  description: 'Bağlı madenleri tek seferde çıkarır'
+  type: 'ACTIVE'
+  trigger: 'SNEAK_LEFT_CLICK'
+  cooldown: 5
+  max_blocks: 32
+  durability_cost: 3
+  message: '&b⛏ Damar madenciliği kullandınız!'
+  vein_blocks:
+    - 'COAL_ORE'
+    - 'IRON_ORE'
+    - 'GOLD_ORE'
+    - 'DIAMOND_ORE'
+    - 'EMERALD_ORE'
+    - 'LAPIS_ORE'
+    - 'REDSTONE_ORE'
+
+# Kombinasyon Yetenekleri
+fire_ice_explosion:
+  enabled: true
+  name: '&c&lAteş-Buz Patlaması'
+  description: 'Ateş ve buz gücünü birleştirerek büyük patlama yaratır'
+  type: 'COMBINATION'
+  trigger: 'BOTH_CLICK'
+  required_abilities:
+    - 'fire_strike'
+    - 'ice_shot'
+  cooldown: 120
+  manaCost: 100
+  range: 10.0
+  damage: 25.0
+  radius: 5.0
+  effects:
+    - 'FIRE:200:2'
+    - 'SLOWNESS:200:3'
+  particles:
+    - 'EXPLOSION_LARGE:10:3.0:3.0:3.0'
+    - 'FLAME:50:5.0:2.0:5.0'
+    - 'SNOWFLAKE:50:5.0:2.0:5.0'
+  sounds:
+    - 'ENTITY_GENERIC_EXPLODE'
+  message: '&c🔥&b❄ &lAteş-Buz Patlaması!'
+  requirements:
+    level: 50
+  permission: 'ultimateitems.ability.fire_ice_explosion'
+
+# Set Yetenekleri
+dragon_strength:
+  enabled: true
+  name: '&4&lEjder Gücü'
+  description: 'Ejder setinin tam gücünü açığa çıkarır'
+  type: 'SET_BONUS'
+  trigger: 'PERMANENT'
+  required_set: 'dragon_set'
+  required_pieces: 4
+  effects:
+    - 'STRENGTH:999999:2'
+    - 'FIRE_RESISTANCE:999999:1'
+    - 'SPEED:999999:1'
+  particles:
+    - 'DRAGON_BREATH:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_ENDER_DRAGON_GROWL'
+  message: '&4🐉 Ejder Gücü aktifleşti!'
+
+# Şartlı Yetenekler
+berserker_rage:
+  enabled: true
+  name: '&c&lÇılgın Öfke'
+  description: 'Canınız düştükçe daha güçlü olursunuz'
+  type: 'CONDITIONAL'
+  trigger: 'HEALTH_LOW'
+  condition:
+    type: 'HEALTH_PERCENT'
+    value: 25
+  duration: 200
+  effects:
+    - 'STRENGTH:200:3'
+    - 'SPEED:200:2'
+    - 'RESISTANCE:200:1'
+  particles:
+    - 'ANGRY_VILLAGER:20:1.0:1.0:1.0'
+    - 'DAMAGE_INDICATOR:10:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_VINDICATOR_CELEBRATE'
+  message: '&c😡 Çılgın Öfke tetiklendi!'
+
+# Yetenek Grupları
+fire_abilities:
+  enabled: true
+  abilities:
+    - 'fire_strike'
+    - 'flame_aura'
+    - 'fire_immunity'
+  permission: 'ultimateitems.abilities.fire'
+
+ice_abilities:
+  enabled: true
+  abilities:
+    - 'ice_shot'
+    - 'freeze_target'
+  permission: 'ultimateitems.abilities.ice'
+
+magic_abilities:
+  enabled: true
+  abilities:
+    - 'lightning_strike'
+    - 'teleport'
+    - 'heal_self'
+  permission: 'ultimateitems.abilities.magic'

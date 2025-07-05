@@ -1,0 +1,440 @@
+# UltimateItemsAdder - Custom Enchantments
+# 1.21.5 Minecraft Uyumlu
+
+# Silah Büyüleri
+flame_burst:
+  enabled: true
+  name: '&c&lAlev Patlaması'
+  description: 'Vurduğu hedefi yakar ve çevresine ateş hasarı verir'
+  type: 'WEAPON'
+  max_level: 3
+  rarity: 'RARE'
+  applicable_items:
+    - 'SWORD'
+    - 'AXE'
+  conflicting_enchants:
+    - 'FROST_ASPECT'
+  effects:
+    level_1:
+      fire_damage: 2.0
+      burn_duration: 60
+      explosion_radius: 1.0
+    level_2:
+      fire_damage: 4.0
+      burn_duration: 80
+      explosion_radius: 1.5
+    level_3:
+      fire_damage: 6.0
+      burn_duration: 100
+      explosion_radius: 2.0
+  particles:
+    - 'FLAME:10:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_BLAZE_SHOOT'
+  permission: 'ultimateitems.enchant.flame_burst'
+
+frost_aspect:
+  enabled: true
+  name: '&b&lBuz Dokunuşu'
+  description: 'Vurduğu hedefi dondurur ve yavaşlatır'
+  type: 'WEAPON'
+  max_level: 2
+  rarity: 'UNCOMMON'
+  applicable_items:
+    - 'SWORD'
+    - 'TRIDENT'
+  conflicting_enchants:
+    - 'FIRE_ASPECT'
+    - 'FLAME_BURST'
+  effects:
+    level_1:
+      freeze_duration: 40
+      slowness_level: 2
+      damage_bonus: 1.0
+    level_2:
+      freeze_duration: 60
+      slowness_level: 3
+      damage_bonus: 2.0
+  particles:
+    - 'SNOWFLAKE:15:1.0:1.0:1.0'
+  sounds:
+    - 'BLOCK_GLASS_BREAK'
+
+lightning_strike:
+  enabled: true
+  name: '&e&lŞimşek Çarpışı'
+  description: 'Hedefi şimşekle vurur ve elektrik hasarı verir'
+  type: 'WEAPON'
+  max_level: 2
+  rarity: 'EPIC'
+  applicable_items:
+    - 'SWORD'
+    - 'BOW'
+    - 'CROSSBOW'
+  effects:
+    level_1:
+      lightning_chance: 15
+      electric_damage: 3.0
+      stun_duration: 20
+    level_2:
+      lightning_chance: 25
+      electric_damage: 5.0
+      stun_duration: 40
+  particles:
+    - 'ELECTRIC_SPARK:20:2.0:2.0:2.0'
+  sounds:
+    - 'ENTITY_LIGHTNING_BOLT_THUNDER'
+
+# Araç Büyüleri
+auto_smelt:
+  enabled: true
+  name: '&6&lOtomatik Eritme'
+  description: 'Çıkarılan madenleri otomatik olarak eritir'
+  type: 'TOOL'
+  max_level: 1
+  rarity: 'RARE'
+  applicable_items:
+    - 'PICKAXE'
+  smeltable_blocks:
+    - 'IRON_ORE'
+    - 'GOLD_ORE'
+    - 'COPPER_ORE'
+    - 'ANCIENT_DEBRIS'
+  particles:
+    - 'FLAME:5:0.5:0.5:0.5'
+  sounds:
+    - 'BLOCK_FURNACE_FIRE_CRACKLE'
+
+vein_miner:
+  enabled: true
+  name: '&9&lDamar Madenciliği'
+  description: 'Bağlı madenleri tek seferde çıkarır'
+  type: 'TOOL'
+  max_level: 3
+  rarity: 'EPIC'
+  applicable_items:
+    - 'PICKAXE'
+  effects:
+    level_1:
+      max_blocks: 16
+      durability_multiplier: 2.0
+    level_2:
+      max_blocks: 32
+      durability_multiplier: 1.5
+    level_3:
+      max_blocks: 64
+      durability_multiplier: 1.0
+  vein_blocks:
+    - 'COAL_ORE'
+    - 'IRON_ORE'
+    - 'GOLD_ORE'
+    - 'DIAMOND_ORE'
+    - 'EMERALD_ORE'
+  particles:
+    - 'CLOUD:20:2.0:2.0:2.0'
+  sounds:
+    - 'BLOCK_STONE_BREAK'
+
+replanting:
+  enabled: true
+  name: '&2&lOtomatik Ekim'
+  description: 'Hasat edilen mahsulleri otomatik olarak yeniden eker'
+  type: 'TOOL'
+  max_level: 1
+  rarity: 'UNCOMMON'
+  applicable_items:
+    - 'HOE'
+  auto_plant_crops:
+    - 'WHEAT'
+    - 'CARROTS'
+    - 'POTATOES'
+    - 'BEETROOTS'
+  particles:
+    - 'HAPPY_VILLAGER:10:1.0:1.0:1.0'
+  sounds:
+    - 'BLOCK_CROP_BREAK'
+
+# Zırh Büyüleri
+elemental_protection:
+  enabled: true
+  name: '&5&lElemental Koruma'
+  description: 'Tüm element hasarlarına karşı koruma sağlar'
+  type: 'ARMOR'
+  max_level: 4
+  rarity: 'LEGENDARY'
+  applicable_items:
+    - 'HELMET'
+    - 'CHESTPLATE'
+    - 'LEGGINGS'
+    - 'BOOTS'
+  conflicting_enchants:
+    - 'PROTECTION'
+    - 'FIRE_PROTECTION'
+    - 'BLAST_PROTECTION'
+    - 'PROJECTILE_PROTECTION'
+  effects:
+    level_1:
+      fire_resistance: 25
+      frost_resistance: 25
+      lightning_resistance: 25
+    level_2:
+      fire_resistance: 40
+      frost_resistance: 40
+      lightning_resistance: 40
+    level_3:
+      fire_resistance: 60
+      frost_resistance: 60
+      lightning_resistance: 60
+    level_4:
+      fire_resistance: 80
+      frost_resistance: 80
+      lightning_resistance: 80
+
+auto_repair:
+  enabled: true
+  name: '&a&lOtomatik Onarım'
+  description: 'Zamanla kendini onarır'
+  type: 'ARMOR'
+  max_level: 3
+  rarity: 'RARE'
+  applicable_items:
+    - 'HELMET'
+    - 'CHESTPLATE'
+    - 'LEGGINGS'
+    - 'BOOTS'
+    - 'SWORD'
+    - 'PICKAXE'
+    - 'AXE'
+    - 'SHOVEL'
+    - 'HOE'
+  effects:
+    level_1:
+      repair_chance: 5
+      repair_amount: 1
+      repair_interval: 200
+    level_2:
+      repair_chance: 10
+      repair_amount: 2
+      repair_interval: 150
+    level_3:
+      repair_chance: 15
+      repair_amount: 3
+      repair_interval: 100
+  particles:
+    - 'HAPPY_VILLAGER:3:0.5:0.5:0.5'
+  sounds:
+    - 'BLOCK_ANVIL_USE'
+
+speed_boost:
+  enabled: true
+  name: '&f&lHız Artışı'
+  description: 'Hareket hızını artırır'
+  type: 'ARMOR'
+  max_level: 3
+  rarity: 'UNCOMMON'
+  applicable_items:
+    - 'BOOTS'
+  effects:
+    level_1:
+      speed_multiplier: 1.1
+    level_2:
+      speed_multiplier: 1.2
+    level_3:
+      speed_multiplier: 1.3
+  particles:
+    - 'CLOUD:2:0.5:0.1:0.5'
+
+# Yay Büyüleri
+explosive_shot:
+  enabled: true
+  name: '&c&lPatlayıcı Ok'
+  description: 'Oklar hedefte patlama yaratır'
+  type: 'BOW'
+  max_level: 3
+  rarity: 'EPIC'
+  applicable_items:
+    - 'BOW'
+    - 'CROSSBOW'
+  conflicting_enchants:
+    - 'MULTISHOT'
+  effects:
+    level_1:
+      explosion_power: 1.0
+      explosion_radius: 2.0
+    level_2:
+      explosion_power: 2.0
+      explosion_radius: 3.0
+    level_3:
+      explosion_power: 3.0
+      explosion_radius: 4.0
+  particles:
+    - 'EXPLOSION_LARGE:5:2.0:2.0:2.0'
+  sounds:
+    - 'ENTITY_GENERIC_EXPLODE'
+
+piercing_shot:
+  enabled: true
+  name: '&7&lDelici Ok'
+  description: 'Oklar zırhı deler ve ekstra hasar verir'
+  type: 'BOW'
+  max_level: 4
+  rarity: 'RARE'
+  applicable_items:
+    - 'BOW'
+    - 'CROSSBOW'
+  effects:
+    level_1:
+      armor_penetration: 25
+      damage_bonus: 1.0
+    level_2:
+      armor_penetration: 40
+      damage_bonus: 2.0
+    level_3:
+      armor_penetration: 60
+      damage_bonus: 3.0
+    level_4:
+      armor_penetration: 80
+      damage_bonus: 4.0
+  particles:
+    - 'CRIT:10:1.0:1.0:1.0'
+
+# Özel Büyüler
+soul_bound:
+  enabled: true
+  name: '&d&lRuh Bağı'
+  description: 'Ölümde kaybolmaz ve sahibine geri döner'
+  type: 'UNIVERSAL'
+  max_level: 1
+  rarity: 'LEGENDARY'
+  applicable_items:
+    - 'ALL'
+  treasure_only: true
+  effects:
+    level_1:
+      keep_on_death: true
+      return_to_owner: true
+  particles:
+    - 'SOUL:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_EXPERIENCE_ORB_PICKUP'
+
+experience_boost:
+  enabled: true
+  name: '&e&lDeneyim Artışı'
+  description: 'Daha fazla deneyim puanı kazandırır'
+  type: 'UNIVERSAL'
+  max_level: 3
+  rarity: 'UNCOMMON'
+  applicable_items:
+    - 'SWORD'
+    - 'PICKAXE'
+    - 'AXE'
+    - 'SHOVEL'
+  effects:
+    level_1:
+      experience_multiplier: 1.5
+    level_2:
+      experience_multiplier: 2.0
+    level_3:
+      experience_multiplier: 2.5
+  particles:
+    - 'HAPPY_VILLAGER:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_EXPERIENCE_ORB_PICKUP'
+
+lucky_strike:
+  enabled: true
+  name: '&a&lŞanslı Vuruş'
+  description: 'Nadir itemler düşürme şansını artırır'
+  type: 'WEAPON'
+  max_level: 3
+  rarity: 'RARE'
+  applicable_items:
+    - 'SWORD'
+    - 'AXE'
+  effects:
+    level_1:
+      rare_drop_chance: 10
+      bonus_loot_chance: 5
+    level_2:
+      rare_drop_chance: 20
+      bonus_loot_chance: 10
+    level_3:
+      rare_drop_chance: 30
+      bonus_loot_chance: 15
+  particles:
+    - 'VILLAGER_HAPPY:10:1.0:1.0:1.0'
+
+# Lanetli Büyüler
+cursed_hunger:
+  enabled: true
+  name: '&8&lAçlık Laneti'
+  description: 'Daha hızla acıkırsınız'
+  type: 'CURSE'
+  max_level: 3
+  rarity: 'UNCOMMON'
+  applicable_items:
+    - 'HELMET'
+    - 'CHESTPLATE'
+  curse: true
+  effects:
+    level_1:
+      hunger_multiplier: 1.5
+    level_2:
+      hunger_multiplier: 2.0
+    level_3:
+      hunger_multiplier: 2.5
+  particles:
+    - 'SMOKE:5:1.0:1.0:1.0'
+
+cursed_fragility:
+  enabled: true
+  name: '&8&lKırılganlık Laneti'
+  description: 'Daha hızla bozulur'
+  type: 'CURSE'
+  max_level: 2
+  rarity: 'RARE'
+  applicable_items:
+    - 'ALL'
+  curse: true
+  effects:
+    level_1:
+      durability_loss_multiplier: 2.0
+    level_2:
+      durability_loss_multiplier: 3.0
+  particles:
+    - 'DAMAGE_INDICATOR:3:0.5:0.5:0.5'
+
+# Büyü Grupları
+weapon_enchants:
+  enabled: true
+  enchants:
+    - 'flame_burst'
+    - 'frost_aspect'
+    - 'lightning_strike'
+    - 'lucky_strike'
+  permission: 'ultimateitems.enchants.weapon'
+
+tool_enchants:
+  enabled: true
+  enchants:
+    - 'auto_smelt'
+    - 'vein_miner'
+    - 'replanting'
+    - 'experience_boost'
+  permission: 'ultimateitems.enchants.tool'
+
+armor_enchants:
+  enabled: true
+  enchants:
+    - 'elemental_protection'
+    - 'auto_repair'
+    - 'speed_boost'
+  permission: 'ultimateitems.enchants.armor'
+
+special_enchants:
+  enabled: true
+  enchants:
+    - 'soul_bound'
+    - 'experience_boost'
+  permission: 'ultimateitems.enchants.special'

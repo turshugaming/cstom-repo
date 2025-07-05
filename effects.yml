@@ -1,0 +1,345 @@
+# UltimateItemsAdder - Custom Effects
+# 1.21.5 Minecraft Uyumlu
+
+# Ateş Efektleri
+burning_target:
+  enabled: true
+  name: '&c&lYakıcı Etki'
+  description: 'Hedefi yakar ve sürekli hasar verir'
+  type: 'DAMAGE_OVER_TIME'
+  duration: 100
+  tick_interval: 20
+  damage: 2.0
+  effects:
+    - 'FIRE:100:0'
+  particles:
+    - 'FLAME:5:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_BLAZE_AMBIENT'
+  remove_on_death: true
+  stackable: false
+
+fire_aura_effect:
+  enabled: true
+  name: '&6&lAteş Aurası'
+  description: 'Etrafınızdaki düşmanları yakarak hasar verir'
+  type: 'AREA_EFFECT'
+  duration: 200
+  tick_interval: 20
+  radius: 3.0
+  damage: 1.5
+  effects:
+    - 'FIRE:40:0'
+  particles:
+    - 'FLAME:3:2.0:0.5:2.0'
+  sounds:
+    - 'BLOCK_FIRE_AMBIENT'
+  target_type: 'ENEMY'
+  remove_on_death: true
+
+# Buz Efektleri
+slowness_target:
+  enabled: true
+  name: '&f&lDondurucu Etki'
+  description: 'Hedefi yavaşlatır ve hareket kabiliyetini düşürür'
+  type: 'DEBUFF'
+  duration: 120
+  effects:
+    - 'SLOWNESS:120:2'
+    - 'WEAKNESS:80:1'
+  particles:
+    - 'SNOWFLAKE:10:1.0:1.0:1.0'
+  sounds:
+    - 'BLOCK_GLASS_BREAK'
+  remove_on_death: true
+  stackable: false
+
+freeze_effect:
+  enabled: true
+  name: '&b&lDonma'
+  description: 'Hedefi tamamen dondurur'
+  type: 'DISABLE'
+  duration: 60
+  effects:
+    - 'SLOWNESS:60:10'
+    - 'JUMP:60:-10'
+    - 'MINING_FATIGUE:60:5'
+  particles:
+    - 'SNOWFLAKE:20:1.0:1.0:1.0'
+    - 'BLOCK_CRACK:10:0.5:0.5:0.5'
+  sounds:
+    - 'BLOCK_GLASS_BREAK'
+  remove_on_death: true
+  immunity_duration: 100
+
+# Şimşek Efektleri
+lightning_stun:
+  enabled: true
+  name: '&e&lŞok'
+  description: 'Hedefi şoke eder ve görüşünü bozar'
+  type: 'DISABLE'
+  duration: 60
+  effects:
+    - 'BLINDNESS:60:1'
+    - 'NAUSEA:60:1'
+    - 'WEAKNESS:100:2'
+  particles:
+    - 'ELECTRIC_SPARK:30:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_LIGHTNING_BOLT_IMPACT'
+  remove_on_death: true
+
+electric_damage:
+  enabled: true
+  name: '&e&lElektrik Hasarı'
+  description: 'Sürekli elektrik hasarı verir'
+  type: 'DAMAGE_OVER_TIME'
+  duration: 80
+  tick_interval: 10
+  damage: 1.0
+  effects:
+    - 'GLOWING:80:0'
+  particles:
+    - 'ELECTRIC_SPARK:5:0.5:0.5:0.5'
+  sounds:
+    - 'BLOCK_REDSTONE_TORCH_BURNOUT'
+  remove_on_death: true
+
+# İyileştirme Efektleri
+regeneration_boost:
+  enabled: true
+  name: '&a&lHızlı İyileşme'
+  description: 'Canınızı hızla yeniler'
+  type: 'HEAL_OVER_TIME'
+  duration: 120
+  tick_interval: 20
+  heal_amount: 2.0
+  effects:
+    - 'REGENERATION:120:2'
+  particles:
+    - 'HEART:5:1.0:1.0:1.0'
+    - 'HAPPY_VILLAGER:3:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_EXPERIENCE_ORB_PICKUP'
+  remove_on_death: false
+
+mana_regeneration:
+  enabled: true
+  name: '&b&lMana Yenilenmesi'
+  description: 'Manayı hızla yeniler'
+  type: 'MANA_OVER_TIME'
+  duration: 200
+  tick_interval: 20
+  mana_amount: 5.0
+  particles:
+    - 'ENCHANTMENT_TABLE:3:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_EXPERIENCE_ORB_PICKUP'
+  remove_on_death: false
+
+# Güçlendirme Efektleri
+strength_boost:
+  enabled: true
+  name: '&c&lGüç Artışı'
+  description: 'Hasar gücünüzü artırır'
+  type: 'BUFF'
+  duration: 300
+  effects:
+    - 'STRENGTH:300:2'
+    - 'SPEED:300:1'
+  particles:
+    - 'ANGRY_VILLAGER:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_PLAYER_LEVELUP'
+  remove_on_death: false
+  stackable: true
+  max_stacks: 3
+
+defense_boost:
+  enabled: true
+  name: '&9&lSavunma Artışı'
+  description: 'Aldığınız hasarı azaltır'
+  type: 'BUFF'
+  duration: 300
+  effects:
+    - 'RESISTANCE:300:1'
+    - 'ABSORPTION:300:2'
+  particles:
+    - 'BARRIER:3:1.0:1.0:1.0'
+  sounds:
+    - 'BLOCK_ANVIL_PLACE'
+  remove_on_death: false
+
+# Zehir Efektleri
+poison_damage:
+  enabled: true
+  name: '&2&lZehir'
+  description: 'Sürekli zehir hasarı verir'
+  type: 'DAMAGE_OVER_TIME'
+  duration: 200
+  tick_interval: 20
+  damage: 1.5
+  effects:
+    - 'POISON:200:1'
+    - 'NAUSEA:100:1'
+  particles:
+    - 'SMOKE:10:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_SPIDER_AMBIENT'
+  remove_on_death: true
+  antidotes:
+    - 'MILK_BUCKET'
+    - 'healing_potion'
+
+wither_effect:
+  enabled: true
+  name: '&8&lÇürüme'
+  description: 'Hedefi çürütür ve maksimum canını düşürür'
+  type: 'DAMAGE_OVER_TIME'
+  duration: 160
+  tick_interval: 20
+  damage: 2.0
+  effects:
+    - 'WITHER:160:1'
+  particles:
+    - 'SMOKE:15:1.0:1.0:1.0'
+    - 'ASH:10:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_WITHER_AMBIENT'
+  remove_on_death: true
+
+# Özel Efektler
+invisibility_cloak:
+  enabled: true
+  name: '&7&lGörünmezlik'
+  description: 'Düşmanlardan gizlenir'
+  type: 'UTILITY'
+  duration: 100
+  effects:
+    - 'INVISIBILITY:100:0'
+    - 'SPEED:100:1'
+  particles:
+    - 'SMOKE:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_ENDERMAN_TELEPORT'
+  remove_on_death: true
+  break_on_attack: true
+
+berserker_rage_effect:
+  enabled: true
+  name: '&c&lÇılgın Öfke'
+  description: 'Canınız düştükçe daha güçlü olursunuz'
+  type: 'CONDITIONAL'
+  duration: 200
+  condition:
+    type: 'HEALTH_PERCENT'
+    value: 25
+    operator: 'LESS_THAN'
+  effects:
+    - 'STRENGTH:200:3'
+    - 'SPEED:200:2'
+    - 'RESISTANCE:200:1'
+  particles:
+    - 'ANGRY_VILLAGER:20:1.0:1.0:1.0'
+    - 'DAMAGE_INDICATOR:10:0.5:0.5:0.5'
+  sounds:
+    - 'ENTITY_VINDICATOR_CELEBRATE'
+  remove_on_death: false
+
+levitation_trap:
+  enabled: true
+  name: '&f&lHavada Kalma'
+  description: 'Hedefi havada tutar'
+  type: 'DISABLE'
+  duration: 80
+  effects:
+    - 'LEVITATION:80:1'
+    - 'SLOWNESS:80:3'
+  particles:
+    - 'CLOUD:20:2.0:2.0:2.0'
+  sounds:
+    - 'ENTITY_VEX_AMBIENT'
+  remove_on_death: true
+
+# Kombinasyon Efektleri
+fire_ice_conflict:
+  enabled: true
+  name: '&c&lAteş-Buz Çelişkisi'
+  description: 'Ateş ve buz güçlerinin çelişkisi büyük hasar verir'
+  type: 'EXPLOSION'
+  duration: 1
+  explosion_power: 3.0
+  explosion_radius: 5.0
+  damage: 15.0
+  effects:
+    - 'FIRE:100:1'
+    - 'SLOWNESS:100:2'
+  particles:
+    - 'EXPLOSION_LARGE:5:3.0:3.0:3.0'
+    - 'FLAME:30:5.0:2.0:5.0'
+    - 'SNOWFLAKE:30:5.0:2.0:5.0'
+  sounds:
+    - 'ENTITY_GENERIC_EXPLODE'
+  remove_on_death: true
+
+# Set Efektleri
+dragon_power:
+  enabled: true
+  name: '&4&lEjder Gücü'
+  description: 'Ejder setinin tam gücünü açığa çıkarır'
+  type: 'SET_BONUS'
+  required_set: 'dragon_set'
+  required_pieces: 4
+  duration: 999999
+  effects:
+    - 'STRENGTH:999999:2'
+    - 'FIRE_RESISTANCE:999999:1'
+    - 'SPEED:999999:1'
+    - 'NIGHT_VISION:999999:0'
+  particles:
+    - 'DRAGON_BREATH:5:1.0:1.0:1.0'
+  sounds:
+    - 'ENTITY_ENDER_DRAGON_GROWL'
+  remove_on_death: false
+
+# Çevresel Efektler
+poison_cloud:
+  enabled: true
+  name: '&2&lZehir Bulutu'
+  description: 'Bölgeyi zehirli hale getirir'
+  type: 'AREA_PERSISTENT'
+  duration: 300
+  tick_interval: 20
+  radius: 5.0
+  damage: 1.0
+  center_location: 'PLAYER'
+  effects:
+    - 'POISON:40:1'
+  particles:
+    - 'SMOKE:30:5.0:1.0:5.0'
+  sounds:
+    - 'ENTITY_WITCH_AMBIENT'
+  target_type: 'ALL_EXCEPT_CASTER'
+
+# Efekt Grupları
+fire_effects:
+  enabled: true
+  effects:
+    - 'burning_target'
+    - 'fire_aura_effect'
+  permission: 'ultimateitems.effects.fire'
+
+ice_effects:
+  enabled: true
+  effects:
+    - 'slowness_target'
+    - 'freeze_effect'
+  permission: 'ultimateitems.effects.ice'
+
+magic_effects:
+  enabled: true
+  effects:
+    - 'lightning_stun'
+    - 'electric_damage'
+    - 'invisibility_cloak'
+  permission: 'ultimateitems.effects.magic'

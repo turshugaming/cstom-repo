@@ -1,0 +1,232 @@
+# UltimateItemsAdder - Custom Recipes
+# 1.21.5 Minecraft Uyumlu
+
+# Ateş Kılıcı Tarifi
+flame_sword_recipe:
+  enabled: true
+  item: 'flame_sword'
+  type: 'SHAPED'
+  shape:
+    - ' F '
+    - ' F '
+    - ' S '
+  ingredients:
+    F: 'BLAZE_ROD'
+    S: 'STICK'
+  result:
+    item: 'flame_sword'
+    amount: 1
+  permission: 'ultimateitems.craft.flame_sword'
+  discover: true
+
+# Buz Yayı Tarifi
+ice_bow_recipe:
+  enabled: true
+  item: 'ice_bow'
+  type: 'SHAPED'
+  shape:
+    - ' IS'
+    - 'I S'
+    - ' IS'
+  ingredients:
+    I: 'PACKED_ICE'
+    S: 'STRING'
+  result:
+    item: 'ice_bow'
+    amount: 1
+  permission: 'ultimateitems.craft.ice_bow'
+
+# Sihir Asası Tarifi
+magic_staff_recipe:
+  enabled: true
+  item: 'magic_staff'
+  type: 'SHAPED'
+  shape:
+    - '  E'
+    - ' S '
+    - 'S  '
+  ingredients:
+    E: 'ENDER_PEARL'
+    S: 'STICK'
+  result:
+    item: 'magic_staff'
+    amount: 1
+  permission: 'ultimateitems.craft.magic_staff'
+  requirements:
+    level: 30
+    experience: 50
+
+# Ejder Miğferi Tarifi
+dragon_helmet_recipe:
+  enabled: true
+  item: 'dragon_helmet'
+  type: 'SHAPED'
+  shape:
+    - 'DDD'
+    - 'D D'
+    - '   '
+  ingredients:
+    D: 'DRAGON_HEAD'
+  result:
+    item: 'dragon_helmet'
+    amount: 1
+  permission: 'ultimateitems.craft.dragon_helmet'
+  requirements:
+    level: 50
+    items:
+      DIAMOND: 5
+      EMERALD: 3
+
+# Madenci Kazması Tarifi
+miners_pickaxe_recipe:
+  enabled: true
+  item: 'miners_pickaxe'
+  type: 'SHAPED'
+  shape:
+    - 'DDD'
+    - ' E '
+    - ' E '
+  ingredients:
+    D: 'DIAMOND'
+    E: 'EMERALD'
+  result:
+    item: 'miners_pickaxe'
+    amount: 1
+  permission: 'ultimateitems.craft.miners_pickaxe'
+
+# Sihirli Elma Tarifi
+magic_apple_recipe:
+  enabled: true
+  item: 'magic_apple'
+  type: 'SHAPED'
+  shape:
+    - 'GGG'
+    - 'GAG'
+    - 'GGG'
+  ingredients:
+    G: 'GOLD_INGOT'
+    A: 'APPLE'
+  result:
+    item: 'magic_apple'
+    amount: 3
+  permission: 'ultimateitems.craft.magic_apple'
+
+# İyileştirme İksiri Tarifi
+healing_potion_recipe:
+  enabled: true
+  item: 'healing_potion'
+  type: 'BREWING'
+  base: 'WATER_BOTTLE'
+  ingredient: 'GOLDEN_APPLE'
+  brewing_time: 400
+  result:
+    item: 'healing_potion'
+    amount: 1
+  permission: 'ultimateitems.brew.healing_potion'
+
+# Ateş Mücevheri Tarifi
+fire_gem_recipe:
+  enabled: true
+  item: 'fire_gem'
+  type: 'SHAPED'
+  shape:
+    - ' B '
+    - 'BEB'
+    - ' B '
+  ingredients:
+    B: 'BLAZE_POWDER'
+    E: 'EMERALD'
+  result:
+    item: 'fire_gem'
+    amount: 2
+  permission: 'ultimateitems.craft.fire_gem'
+
+# Gelişmiş Tarif - Kombinasyon
+ultimate_sword_recipe:
+  enabled: true
+  item: 'ultimate_sword'
+  type: 'COMBINATION'
+  ingredients:
+    - item: 'flame_sword'
+      amount: 1
+    - item: 'fire_gem'
+      amount: 3
+    - material: 'NETHERITE_INGOT'
+      amount: 2
+  result:
+    item: 'ultimate_sword'
+    amount: 1
+  station: 'SMITHING_TABLE'
+  permission: 'ultimateitems.craft.ultimate_sword'
+  requirements:
+    level: 60
+    experience: 100
+    items:
+      DIAMOND: 10
+      EMERALD: 5
+
+# Özel Fırın Tarifi
+smelting_recipe_1:
+  enabled: true
+  type: 'SMELTING'
+  input: 'IRON_ORE'
+  fuel: 'fire_gem'
+  result:
+    material: 'IRON_INGOT'
+    amount: 3
+  cook_time: 100
+  experience: 1.5
+
+# Özel Duman Verme Tarifi
+smoking_recipe_1:
+  enabled: true
+  type: 'SMOKING'
+  input: 'BEEF'
+  fuel: 'fire_gem'
+  result:
+    material: 'COOKED_BEEF'
+    amount: 2
+  cook_time: 50
+  experience: 1.0
+
+# Taş Kesme Tarifi
+stonecutting_recipe_1:
+  enabled: true
+  type: 'STONECUTTING'
+  input: 'STONE'
+  result:
+    material: 'STONE_BRICKS'
+    amount: 4
+
+# Demircilik Tarifi (Smithing)
+smithing_recipe_1:
+  enabled: true
+  type: 'SMITHING'
+  template: 'NETHERITE_UPGRADE_SMITHING_TEMPLATE'
+  base: 'DIAMOND_SWORD'
+  addition: 'fire_gem'
+  result:
+    item: 'flame_sword'
+    amount: 1
+
+# Grup Tarifler
+weapon_recipes:
+  enabled: true
+  recipes:
+    - 'flame_sword_recipe'
+    - 'ice_bow_recipe'
+    - 'magic_staff_recipe'
+  unlock_all: false
+  permission: 'ultimateitems.craft.weapons'
+
+armor_recipes:
+  enabled: true
+  recipes:
+    - 'dragon_helmet_recipe'
+  permission: 'ultimateitems.craft.armor'
+
+tool_recipes:
+  enabled: true
+  recipes:
+    - 'miners_pickaxe_recipe'
+  permission: 'ultimateitems.craft.tools'

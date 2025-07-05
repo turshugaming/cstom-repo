@@ -1,0 +1,198 @@
+# UltimateItemsAdder - Çoklu Dil Desteği
+# 1.21.5 Minecraft Uyumlu
+
+# Türkçe (tr_tr)
+tr_tr:
+  # Genel Mesajlar
+  prefix: '&d[UltimateItems] &7'
+  no_permission: '&cBunu yapmaya yetkiniz yok!'
+  player_only: '&cBu komut sadece oyuncular tarafından kullanılabilir!'
+  reload_success: '&aPlugin başarıyla yeniden yüklendi! ({time}ms)'
+  reload_error: '&cPlugin yeniden yüklenirken hata oluştu!'
+  
+  # Item Mesajları
+  item_given: '&a{player} adlı oyuncuya {amount} adet {item} verildi!'
+  item_received: '&aSize {amount} adet {item} verildi!'
+  item_not_found: '&cItem bulunamadı: {item}'
+  item_created: '&aYeni item oluşturuldu: {item}'
+  item_deleted: '&cItem silindi: {item}'
+  item_edited: '&aItem düzenlendi: {item}'
+  
+  # Yetenek Mesajları
+  ability_used: '&a{ability} yeteneği kullandınız!'
+  ability_cooldown: '&cBekleme süresi: {time} saniye'
+  ability_no_mana: '&cYetersiz mana! Gerekli: {required}'
+  ability_no_permission: '&cBu yeteneği kullanma izniniz yok!'
+  ability_activated: '&a{ability} yeteneği aktifleşti!'
+  ability_deactivated: '&c{ability} yeteneği deaktif oldu!'
+  
+  # Resource Pack Mesajları
+  pack_generating: '&eResource pack oluşturuluyor...'
+  pack_generated: '&aResource pack başarıyla oluşturuldu!'
+  pack_generation_error: '&cResource pack oluşturulurken hata!'
+  pack_sending: '&eResource pack gönderiliyor...'
+  pack_sent: '&aResource pack gönderildi!'
+  pack_accepted: '&aResource pack kabul edildi!'
+  pack_declined: '&cResource pack reddedildi!'
+  pack_failed: '&cResource pack yüklenemedi!'
+  
+  # Komut Yardımları
+  help_header: '&d========== &lUltimate Items Yardım &d=========='
+  help_reload: '&6/ui reload &7- Plugin''i yeniden yükle'
+  help_give: '&6/ui give <oyuncu> <item> [miktar] &7- Item ver'
+  help_list: '&6/ui list [kategori] &7- Itemleri listele'
+  help_info: '&6/ui info <item> &7- Item bilgilerini göster'
+  help_create: '&6/ui create <id> <material> &7- Yeni item oluştur'
+  help_edit: '&6/ui edit <item> <özellik> <değer> &7- Item düzenle'
+  help_delete: '&6/ui delete <item> &7- Item sil'
+  help_test: '&6/ui test <item> &7- 1.21.5 texture test'
+  
+  # GUI Başlıkları
+  gui_main: '&6Ultimate Items Menü'
+  gui_items: '&6Custom Items'
+  gui_categories: '&6Kategoriler'
+  gui_settings: '&6Ayarlar'
+  
+  # Kategori İsimleri
+  category_weapons: '&cSilahlar'
+  category_armor: '&9Zırhlar'
+  category_tools: '&eAraçlar'
+  category_food: '&6Yiyecekler'
+  category_potions: '&dİksirler'
+  category_gems: '&bMücevherler'
+  category_misc: '&7Çeşitli'
+  
+  # Rarities (Nadirlik)
+  rarity_common: '&fSıradan'
+  rarity_uncommon: '&aAlışılmadık'
+  rarity_rare: '&bNadir'
+  rarity_epic: '&5Epik'
+  rarity_legendary: '&6Efsanevi'
+  rarity_mythic: '&cMitik'
+  
+  # Başarı Mesajları
+  success_backup: '&aYedekleme başarıyla oluşturuldu!'
+  success_restore: '&aYedekten geri yükleme başarılı!'
+  success_export: '&aVeriler başarıyla dışa aktarıldı!'
+  success_import: '&aVeriler başarıyla içe aktarıldı!'
+  
+  # Hata Mesajları
+  error_file_not_found: '&cDosya bulunamadı: {file}'
+  error_invalid_number: '&cGeçersiz sayı: {number}'
+  error_invalid_material: '&cGeçersiz materyal: {material}'
+  error_player_not_found: '&cOyuncu bulunamadı: {player}'
+  error_inventory_full: '&cEnvanter dolu! Bazı itemler yere düştü.'
+  
+  # Test Mesajları
+  test_item_given: '&aTest item verildi!'
+  test_info_header: '&7=== Test Bilgileri ==='
+  test_item_id: '&eItem ID: &f{id}'
+  test_model_data: '&eCustom Model Data: &f{data}'
+  test_texture: '&eTexture: &f{texture}'
+  test_model: '&eModel: &f{model}'
+  test_material: '&eBase Material: &f{material}'
+  test_pack_available: '&a✓ Resource pack mevcut'
+  test_pack_missing: '&c✗ Resource pack bulunamadı'
+  test_pack_regenerate: '&7Resource pack''i yeniden oluşturmak için: &e/ui pack regenerate'
+  test_result_header: '&7=== Test Sonucu ==='
+  test_result_success: '&b1. Item elinizde normal görünüyorsa: &a✓ Başarılı'
+  test_result_texture: '&b2. Custom texture görünüyorsa: &a✓ 1.21.5 Uyumlu'
+  test_result_fail: '&b3. Sadece base material görünüyorsa: &c✗ Texture yüklenemedi'
+
+# English (en_us)
+en_us:
+  # General Messages
+  prefix: '&d[UltimateItems] &7'
+  no_permission: '&cYou don''t have permission to do this!'
+  player_only: '&cThis command can only be used by players!'
+  reload_success: '&aPlugin successfully reloaded! ({time}ms)'
+  reload_error: '&cError occurred while reloading plugin!'
+  
+  # Item Messages
+  item_given: '&aGave {amount} {item} to {player}!'
+  item_received: '&aYou received {amount} {item}!'
+  item_not_found: '&cItem not found: {item}'
+  item_created: '&aNew item created: {item}'
+  item_deleted: '&cItem deleted: {item}'
+  item_edited: '&aItem edited: {item}'
+  
+  # Ability Messages
+  ability_used: '&aUsed {ability} ability!'
+  ability_cooldown: '&cCooldown: {time} seconds'
+  ability_no_mana: '&cNot enough mana! Required: {required}'
+  ability_no_permission: '&cYou don''t have permission to use this ability!'
+  ability_activated: '&a{ability} ability activated!'
+  ability_deactivated: '&c{ability} ability deactivated!'
+  
+  # Resource Pack Messages
+  pack_generating: '&eGenerating resource pack...'
+  pack_generated: '&aResource pack successfully generated!'
+  pack_generation_error: '&cError generating resource pack!'
+  pack_sending: '&eSending resource pack...'
+  pack_sent: '&aResource pack sent!'
+  pack_accepted: '&aResource pack accepted!'
+  pack_declined: '&cResource pack declined!'
+  pack_failed: '&cResource pack failed to load!'
+  
+  # Command Help
+  help_header: '&d========== &lUltimate Items Help &d=========='
+  help_reload: '&6/ui reload &7- Reload the plugin'
+  help_give: '&6/ui give <player> <item> [amount] &7- Give item'
+  help_list: '&6/ui list [category] &7- List items'
+  help_info: '&6/ui info <item> &7- Show item info'
+  help_create: '&6/ui create <id> <material> &7- Create new item'
+  help_edit: '&6/ui edit <item> <property> <value> &7- Edit item'
+  help_delete: '&6/ui delete <item> &7- Delete item'
+  help_test: '&6/ui test <item> &7- 1.21.5 texture test'
+  
+  # GUI Titles
+  gui_main: '&6Ultimate Items Menu'
+  gui_items: '&6Custom Items'
+  gui_categories: '&6Categories'
+  gui_settings: '&6Settings'
+  
+  # Category Names
+  category_weapons: '&cWeapons'
+  category_armor: '&9Armor'
+  category_tools: '&eTools'
+  category_food: '&6Food'
+  category_potions: '&dPotions'
+  category_gems: '&bGems'
+  category_misc: '&7Miscellaneous'
+  
+  # Rarities
+  rarity_common: '&fCommon'
+  rarity_uncommon: '&aUncommon'
+  rarity_rare: '&bRare'
+  rarity_epic: '&5Epic'
+  rarity_legendary: '&6Legendary'
+  rarity_mythic: '&cMythic'
+  
+  # Success Messages
+  success_backup: '&aBackup successfully created!'
+  success_restore: '&aSuccessfully restored from backup!'
+  success_export: '&aData successfully exported!'
+  success_import: '&aData successfully imported!'
+  
+  # Error Messages
+  error_file_not_found: '&cFile not found: {file}'
+  error_invalid_number: '&cInvalid number: {number}'
+  error_invalid_material: '&cInvalid material: {material}'
+  error_player_not_found: '&cPlayer not found: {player}'
+  error_inventory_full: '&cInventory full! Some items dropped on ground.'
+  
+  # Test Messages
+  test_item_given: '&aTest item given!'
+  test_info_header: '&7=== Test Information ==='
+  test_item_id: '&eItem ID: &f{id}'
+  test_model_data: '&eCustom Model Data: &f{data}'
+  test_texture: '&eTexture: &f{texture}'
+  test_model: '&eModel: &f{model}'
+  test_material: '&eBase Material: &f{material}'
+  test_pack_available: '&a✓ Resource pack available'
+  test_pack_missing: '&c✗ Resource pack not found'
+  test_pack_regenerate: '&7To regenerate resource pack: &e/ui pack regenerate'
+  test_result_header: '&7=== Test Result ==='
+  test_result_success: '&b1. If item appears normal in hand: &a✓ Success'
+  test_result_texture: '&b2. If custom texture shows: &a✓ 1.21.5 Compatible'
+  test_result_fail: '&b3. If only base material shows: &c✗ Texture failed to load'

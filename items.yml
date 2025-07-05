@@ -1,0 +1,282 @@
+# UltimateItemsAdder - Custom Items
+# 1.21.5 Minecraft Uyumlu
+
+# Örnek Kılıçlar
+flame_sword:
+  enabled: true
+  displayName: '&c&lAteş Kılıcı'
+  material: IRON_SWORD
+  texture: 'flame_sword'
+  model: 'flame_sword'
+  customModelData: 1001
+  rarity: 'EPIC'
+  category: 'weapons'
+  weaponType: 'SWORD'
+  tier: 5
+  damage: 15.0
+  critChance: 25.0
+  critMultiplier: 2.0
+  durability: 500
+  maxDurability: 500
+  unbreakable: false
+  glowing: true
+  lore:
+    - '&7Eski ejderlerin nefesiyle dövülmüş'
+    - '&7efsanevi bir kılıç.'
+    - ''
+    - '&c⚔ Hasar: &f15'
+    - '&e⚡ Kritik Şansı: &f25%'
+    - '&6🔥 Ateş Hasarı'
+  enchantments:
+    fire_aspect: 2
+    sharpness: 5
+    unbreaking: 3
+  abilities:
+    - 'fire_strike'
+    - 'flame_aura'
+  effects:
+    - 'burning_target'
+  particles:
+    idle: 'FLAME'
+    hit: 'LAVA'
+  sounds:
+    hit: 'ENTITY_BLAZE_HURT'
+    use: 'ITEM_FLINTANDSTEEL_USE'
+  requirements:
+    level: 25
+    permission: 'ultimateitems.flame_sword'
+  stackable: false
+  maxStack: 1
+  soulbound: true
+  tradeable: false
+  droppable: true
+
+ice_bow:
+  enabled: true
+  displayName: '&b&lBuz Yayı'
+  material: BOW
+  texture: 'ice_bow'
+  model: 'ice_bow'
+  customModelData: 1002
+  rarity: 'RARE'
+  category: 'weapons'
+  weaponType: 'BOW'
+  tier: 4
+  damage: 12.0
+  range: 32.0
+  critChance: 15.0
+  durability: 300
+  maxDurability: 300
+  lore:
+    - '&7Antik buzullardan çıkarılmış'
+    - '&7gizemli bir yay.'
+    - ''
+    - '&b❄ Menzil: &f32 blok'
+    - '&f⚡ Dondurucu etkisi'
+  enchantments:
+    power: 4
+    punch: 2
+    infinity: 1
+  abilities:
+    - 'ice_shot'
+    - 'freeze_target'
+  effects:
+    - 'slowness_target'
+  particles:
+    idle: 'SNOWFLAKE'
+    shoot: 'CLOUD'
+  sounds:
+    shoot: 'ENTITY_SNOW_GOLEM_SHOOT'
+  stackable: false
+  soulbound: false
+  tradeable: true
+
+magic_staff:
+  enabled: true
+  displayName: '&5&lSihir Asası'
+  material: STICK
+  texture: 'magic_staff'
+  model: 'magic_staff'
+  customModelData: 1003
+  rarity: 'LEGENDARY'
+  category: 'weapons'
+  weaponType: 'STAFF'
+  tier: 6
+  damage: 8.0
+  mana: 100
+  manaCost: 15
+  cooldown: 5
+  lore:
+    - '&7Büyücülerin gücüyle dolu'
+    - '&7antik bir asa.'
+    - ''
+    - '&5🔮 Mana: &f100'
+    - '&d⚡ Büyü Gücü: &f8'
+    - '&e⏱ Cooldown: &f5 saniye'
+  enchantments:
+    sharpness: 3
+  abilities:
+    - 'lightning_strike'
+    - 'teleport'
+    - 'heal_self'
+  particles:
+    idle: 'ENCHANTMENT_TABLE'
+    cast: 'DRAGON_BREATH'
+  sounds:
+    cast: 'ENTITY_EVOKER_CAST_SPELL'
+  stackable: false
+  soulbound: true
+  unique: true
+
+# Örnek Zırhlar
+dragon_helmet:
+  enabled: true
+  displayName: '&4&lEjder Miğferi'
+  material: DIAMOND_HELMET
+  texture: 'dragon_helmet'
+  model: 'dragon_helmet'
+  customModelData: 2001
+  rarity: 'LEGENDARY'
+  category: 'armor'
+  armorType: 'HELMET'
+  tier: 6
+  defense: 8.0
+  health: 10.0
+  fireResistance: 50.0
+  lore:
+    - '&7Antik ejderin pullarından'
+    - '&7yapılmış güçlü bir miğfer.'
+    - ''
+    - '&a❤ Can: &f+10'
+    - '&c🛡 Savunma: &f8'
+    - '&6🔥 Ateş Direnci: &f50%'
+  enchantments:
+    protection: 4
+    fire_protection: 3
+    unbreaking: 3
+  setBonuses:
+    2: 'fire_immunity'
+    4: 'dragon_strength'
+  abilities:
+    - 'fire_immunity'
+  stackable: false
+  soulbound: true
+  set: 'dragon_set'
+
+# Örnek Araçlar
+miners_pickaxe:
+  enabled: true
+  displayName: '&e&lMadenci Kazması'
+  material: DIAMOND_PICKAXE
+  texture: 'miners_pickaxe'
+  model: 'miners_pickaxe'
+  customModelData: 3001
+  rarity: 'EPIC'
+  category: 'tools'
+  toolType: 'PICKAXE'
+  tier: 5
+  efficiency: 150.0
+  autoSmelt: true
+  fortuneBonus: 3
+  lore:
+    - '&7Deneyimli madencilerin'
+    - '&7özel kazmalarından biri.'
+    - ''
+    - '&e⚡ Verimlilik: &f150%'
+    - '&6🔥 Otomatik eritme'
+    - '&b💎 Şans bonusu: &f+3'
+  enchantments:
+    efficiency: 5
+    fortune: 3
+    unbreaking: 3
+  abilities:
+    - 'auto_smelt'
+    - 'vein_miner'
+  sounds:
+    break: 'BLOCK_ANVIL_PLACE'
+  stackable: false
+
+# Örnek Yiyecekler
+magic_apple:
+  enabled: true
+  displayName: '&d&lSihirli Elma'
+  material: APPLE
+  texture: 'magic_apple'
+  model: 'magic_apple'
+  customModelData: 4001
+  rarity: 'RARE'
+  category: 'food'
+  foodType: 'FRUIT'
+  tier: 3
+  hunger: 8
+  saturation: 12.0
+  healAmount: 10.0
+  lore:
+    - '&7Büyülü bahçelerden'
+    - '&7toplanmış özel elma.'
+    - ''
+    - '&a❤ İyileştirme: &f10 can'
+    - '&e🍖 Tokluk: &f8'
+    - '&b⚡ Geçici güçlendirmeler'
+  effects:
+    - 'regeneration:120:2'
+    - 'speed:300:1'
+    - 'strength:300:1'
+  sounds:
+    eat: 'ENTITY_PLAYER_BURP'
+  stackable: true
+  maxStack: 16
+
+# Örnek Potions
+healing_potion:
+  enabled: true
+  displayName: '&a&lİyileştirme İksiri'
+  material: POTION
+  texture: 'healing_potion'
+  model: 'healing_potion'
+  customModelData: 5001
+  rarity: 'COMMON'
+  category: 'potions'
+  potionType: 'HEALING'
+  tier: 2
+  healAmount: 20.0
+  duration: 0
+  lore:
+    - '&7Acil durumlar için'
+    - '&7hazırlanmış iyileştirici.'
+    - ''
+    - '&a❤ İyileştirme: &f20 can'
+    - '&e⚡ Anında etki'
+  effects:
+    - 'instant_health:1:2'
+  sounds:
+    drink: 'ENTITY_GENERIC_DRINK'
+  stackable: true
+  maxStack: 8
+
+# Örnek Gemler
+fire_gem:
+  enabled: true
+  displayName: '&c&lAteş Mücevheri'
+  material: EMERALD
+  texture: 'fire_gem'
+  model: 'fire_gem'
+  customModelData: 6001
+  rarity: 'EPIC'
+  category: 'gems'
+  gemType: 'FIRE'
+  tier: 4
+  socketType: 'weapon'
+  bonuses:
+    fire_damage: 5.0
+    burn_chance: 25.0
+  lore:
+    - '&7Yanardağ kalbiyle parlayan'
+    - '&7nadir bir mücevher.'
+    - ''
+    - '&c🔥 Ateş Hasarı: &f+5'
+    - '&e🔥 Yakma Şansı: &f25%'
+    - '&7Sadece silahlara takılabilir'
+  glowing: true
+  stackable: true
+  maxStack: 16

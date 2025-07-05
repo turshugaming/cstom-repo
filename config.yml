@@ -1,0 +1,105 @@
+# UltimateItemsAdder - Ana Konfigürasyon
+# 1.21.5 Minecraft Uyumlu
+
+# Genel Ayarlar
+general:
+  debug: false
+  auto-update: true
+  metrics: true
+  language: 'tr_tr'
+  prefix: '&d[UltimateItems] &7'
+
+# Resource Pack Ayarları
+pack:
+  enabled: true
+  auto-generate: true
+  description: '&6Ultimate Items Resource Pack\n&71.21.5 Uyumlu'
+  format: 15
+  supported-formats:
+    min: 13
+    max: 15
+  compression: 'ZIP'
+  
+# HTTP Sunucu Ayarları
+server:
+  enabled: true
+  port: 8080
+  ip: 'auto'
+  path: '/resourcepack'
+  
+# Veritabanı Ayarları
+database:
+  type: 'SQLITE'
+  host: 'localhost'
+  port: 3306
+  name: 'ultimateitems'
+  username: 'root'
+  password: ''
+  
+# Performans Ayarları
+performance:
+  thread-pool-size: 4
+  scheduler-pool-size: 2
+  max-memory-usage: 512
+  cache-size: 1000
+  
+# Güvenlik Ayarları
+security:
+  enable-permissions: true
+  default-permissions: false
+  admin-permission: 'ultimateitems.admin'
+  
+# Oyuncu Ayarları
+player:
+  auto-send-pack: true
+  force-pack: false
+  pack-timeout: 30
+  save-data: true
+  
+# İstatistik Ayarları
+statistics:
+  enabled: true
+  save-interval: 300
+  track-usage: true
+  track-performance: true
+  
+# Yedekleme Ayarları
+backup:
+  enabled: true
+  interval: 24
+  max-backups: 7
+  compress: true
+  
+# GUI Ayarları
+gui:
+  enabled: true
+  size: 54
+  title: '&6Ultimate Items'
+  refresh-interval: 1
+  
+# Ses Ayarları
+sounds:
+  enabled: true
+  volume: 1.0
+  pitch: 1.0
+  
+# Parçacık Ayarları
+particles:
+  enabled: true
+  density: 1.0
+  range: 16
+  
+# Komut Ayarları
+commands:
+  enabled: true
+  aliases:
+    - 'ui'
+    - 'ultimateitems'
+    - 'customitems'
+    
+# Hook Ayarları
+hooks:
+  vault: true
+  placeholderapi: true
+  worldguard: true
+  mythicmobs: true
