@@ -1,0 +1,291 @@
+# 🔧 1.21.5 Uyumlu Örnek Items Config
+# Bu dosyayı plugins/UltimateItemsAdder/configs/items.yml olarak kaydet
+
+# Basit Custom Sword
+flame_sword:
+  displayName: "&c&lAteş Kılıcı"
+  material: IRON_SWORD
+  texture: "flame_sword"
+  model: "flame_sword"
+  customModelData: 1001  # Otomatik atanacak ama belirtebilirsin
+  rarity: "EPIC"
+  category: "weapons"
+  weaponType: "SWORD"
+  enabled: true
+  lore:
+    - "&7Eski ejderlerin nefesiyle dövülmüş"
+    - "&7efsanevi bir kılıç."
+    - ""
+    - "&c⚔ Hasar: &f15"
+    - "&e⚡ Özel: Ateş hasarı"
+  enchantments:
+    fire_aspect: 2
+    sharpness: 5
+  damage: 15.0
+  attributes:
+    GENERIC_ATTACK_DAMAGE: 15.0
+    GENERIC_ATTACK_SPEED: 1.6
+  abilities:
+    - "fire_strike"
+  effects:
+    - "burning_aura"
+  unbreakable: false
+  durability: 500
+  maxDurability: 500
+
+# Magic Staff
+ice_staff:
+  displayName: "&b&lBuz Asası"
+  material: STICK
+  texture: "ice_staff"
+  model: "ice_staff"
+  customModelData: 1002
+  rarity: "LEGENDARY"
+  category: "magic"
+  weaponType: "STAFF"
+  enabled: true
+  lore:
+    - "&7Kuzey Kutbu'nun derinliklerinden"
+    - "&7çıkarılmış buzdan asa."
+    - ""
+    - "&b❄ Mana: &f50"
+    - "&e⚡ Özel: Dondurucu büyü"
+  damage: 8.0
+  mana: 50.0
+  abilities:
+    - "ice_blast"
+    - "freeze_aura"
+  particles:
+    idle: "SNOWFLAKE"
+    cast: "WATER_DROP"
+  sounds:
+    use: "BLOCK_GLASS_BREAK"
+    cast: "AMBIENT_UNDERWATER_ENTER"
+  cooldowns:
+    ice_blast: 5
+    freeze_aura: 15
+
+# Custom Armor
+dragon_helmet:
+  displayName: "&4&lEjder Miğferi"
+  material: DIAMOND_HELMET
+  texture: "dragon_helmet"
+  model: "dragon_helmet"
+  customModelData: 1003
+  rarity: "MYTHIC"
+  category: "armor"
+  armorType: "HELMET"
+  enabled: true
+  lore:
+    - "&7Antik ejder derisinden yapılmış"
+    - "&7efsanevi koruyucu."
+    - ""
+    - "&a⛨ Savunma: &f8"
+    - "&c❤ Sağlık: &f+20"
+  defense: 8.0
+  health: 20.0
+  attributes:
+    GENERIC_ARMOR: 8.0
+    GENERIC_MAX_HEALTH: 20.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.3
+  enchantments:
+    protection: 4
+    unbreaking: 3
+    mending: 1
+  resistances:
+    FIRE: 50.0
+    MAGIC: 25.0
+  setBonuses:
+    2: 
+      effects: ["FIRE_RESISTANCE"]
+      damage: 5.0
+    4:
+      effects: ["FIRE_RESISTANCE", "REGENERATION"]
+      damage: 15.0
+      abilities: ["dragon_breath"]
+
+# Custom Tool
+ruby_pickaxe:
+  displayName: "&c&lRübin Kazma"
+  material: DIAMOND_PICKAXE
+  texture: "ruby_pickaxe"
+  model: "ruby_pickaxe"
+  customModelData: 1004
+  rarity: "RARE"
+  category: "tools"
+  toolType: "PICKAXE"
+  enabled: true
+  lore:
+    - "&7Derin mağaralardan çıkarılmış"
+    - "&7rübin kristalleriyle süslenmiş kazma."
+    - ""
+    - "&e⛏ Verimlilik: &f12"
+    - "&a✯ Şans: &f+25%"
+  efficiency: 12.0
+  fortune: 3
+  harvestLevel: 3
+  bonuses:
+    fortune: 2.5
+    auto_smelt: true
+    silk_touch: false
+  harvestableBlocks:
+    - "STONE"
+    - "COBBLESTONE" 
+    - "IRON_ORE"
+    - "GOLD_ORE"
+    - "DIAMOND_ORE"
+    - "EMERALD_ORE"
+  abilities:
+    - "vein_miner"
+    - "ore_finder"
+
+# Custom Food
+magic_apple:
+  displayName: "&d&lSihirli Elma"
+  material: GOLDEN_APPLE
+  texture: "magic_apple"
+  model: "magic_apple"
+  customModelData: 1005
+  rarity: "UNCOMMON"
+  category: "food"
+  enabled: true
+  lore:
+    - "&7Büyücüler tarafından kutsanmış"
+    - "&7özel bir elma."
+    - ""
+    - "&c❤ Sağlık: &f+6"
+    - "&e⚡ Mana: &f+10"
+  hunger: 6
+  saturation: 12.0
+  alwaysEdible: true
+  eatSpeed: 1.0
+  bonuses:
+    health: 6.0
+    mana: 10.0
+    speed: 2
+    regeneration: 1
+  stackable: true
+  maxStack: 16
+
+# Custom Projectile Item
+magic_arrow:
+  displayName: "&5&lBüyülü Ok"
+  material: ARROW
+  texture: "magic_arrow"
+  model: "magic_arrow"
+  customModelData: 1006
+  rarity: "UNCOMMON"
+  category: "ammunition"
+  enabled: true
+  lore:
+    - "&7Büyü enerjisiyle dolu ok."
+    - ""
+    - "&d⚡ Büyü hasarı: &f+5"
+    - "&e✯ Hedef arayıcı"
+  damage: 5.0
+  stackable: true
+  maxStack: 64
+  projectileType: "MAGIC_ARROW"
+  projectileEffects:
+    homing: true
+    pierce: 2
+    explosion: 1.0
+    lightning: 10 # %10 şans
+
+# Rare Material
+mithril_ingot:
+  displayName: "&b&lMithril Külçesi"
+  material: IRON_INGOT
+  texture: "mithril_ingot"
+  model: "mithril_ingot"
+  customModelData: 1007
+  rarity: "LEGENDARY"
+  category: "materials"
+  enabled: true
+  lore:
+    - "&7Efsanevi mithril madeninden"
+    - "&7elde edilen nadir külçe."
+    - ""
+    - "&e⚒ Craft materyali"
+    - "&d✨ Büyü güçlendirici"
+  stackable: true
+  maxStack: 64
+  glowing: true
+  value: 1000.0
+  currency: "gold"
+  tradeable: true
+
+# Utility Item
+teleport_crystal:
+  displayName: "&3&lIşınlanma Kristali"
+  material: AMETHYST_SHARD
+  texture: "teleport_crystal"
+  model: "teleport_crystal"
+  customModelData: 1008
+  rarity: "EPIC"
+  category: "utility"
+  enabled: true
+  lore:
+    - "&7Uzak mesafelere ışınlanmanızı"
+    - "&7sağlayan kristal."
+    - ""
+    - "&3⌘ Kullanımlar: &f5"
+    - "&e⏱ Cooldown: &f30s"
+  stackable: false
+  charges: 5
+  abilities:
+    - "teleport"
+  cooldowns:
+    teleport: 30
+  particles:
+    use: "PORTAL"
+    idle: "ENCHANT"
+  sounds:
+    use: "ENTITY_ENDERMAN_TELEPORT"
+  glowing: true
+
+# Pet Summon Item
+wolf_whistle:
+  displayName: "&6&lKurt Düdüğü"
+  material: GOAT_HORN
+  texture: "wolf_whistle"
+  model: "wolf_whistle"
+  customModelData: 1009
+  rarity: "RARE"
+  category: "pets"
+  enabled: true
+  lore:
+    - "&7Sadık bir kurt çağırmanızı"
+    - "&7sağlayan büyülü düdük."
+    - ""
+    - "&6🐺 Pet: Savaş Kurdu"
+    - "&e⏱ Cooldown: &f60s"
+  stackable: false
+  abilities:
+    - "summon_wolf"
+  cooldowns:
+    summon_wolf: 60
+  sounds:
+    use: "ITEM_GOAT_HORN_SOUND_0"
+  durability: 10
+  maxDurability: 10
+
+# Currency Item
+gold_coin:
+  displayName: "&e&lAltın Sikke"
+  material: SUNFLOWER
+  texture: "gold_coin"
+  model: "gold_coin"
+  customModelData: 1010
+  rarity: "COMMON"
+  category: "currency"
+  enabled: true
+  lore:
+    - "&7Standart altın para birimi."
+    - ""
+    - "&e💰 Değer: 1 Altın"
+  stackable: true
+  maxStack: 64
+  value: 1.0
+  currency: "gold"
+  weight: 0.1
