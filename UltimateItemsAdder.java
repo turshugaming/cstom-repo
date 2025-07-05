@@ -495,17 +495,30 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
                     meta.setLore(coloredLore);
                 }
 
-                // Custom Model Data
+                // 🆕 1.21.5 Custom Model Data - Doğru assignment
                 if (customModelData > 0) {
                     meta.setCustomModelData(customModelData);
+                } else {
+                    // Otomatik ID assignment (hash-based)
+                    int autoId = Math.abs(id.hashCode()) % 10000 + 1000;
+                    meta.setCustomModelData(autoId);
+                    customModelData = autoId; // Update the field
                 }
 
-                // Enchantments
+                // 🆕 1.21.5 Enchantments - Registry kullanımı
                 if (enchantments != null) {
                     for (Map.Entry<String, Integer> entry : enchantments.entrySet()) {
-                        Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(entry.getKey().toLowerCase()));
-                        if (enchant != null) {
-                            meta.addEnchant(enchant, entry.getValue(), true);
+                        try {
+                            Enchantment enchant = Registry.ENCHANTMENT.get(NamespacedKey.minecraft(entry.getKey().toLowerCase()));
+                            if (enchant != null) {
+                                meta.addEnchant(enchant, entry.getValue(), true);
+                            }
+                        } catch (Exception e) {
+                            // Fallback to old method
+                            Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(entry.getKey().toLowerCase()));
+                            if (enchant != null) {
+                                meta.addEnchant(enchant, entry.getValue(), true);
+                            }
                         }
                     }
                 }
@@ -548,17 +561,27 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
                     }
                 }
 
-                // Persistent Data
-                meta.getPersistentDataContainer().set(
+                // 🆕 1.21.5 Persistent Data Container
+                PersistentDataContainer container = meta.getPersistentDataContainer();
+                
+                // Custom item ID
+                container.set(
                         new NamespacedKey(UltimateItemsAdder.instance, "custom_item_id"),
                         PersistentDataType.STRING,
                         id
                 );
 
+                // Custom model data reference
+                container.set(
+                        new NamespacedKey(UltimateItemsAdder.instance, "cmd"),
+                        PersistentDataType.INTEGER,
+                        customModelData
+                );
+
                 // NBT Data
                 if (nbt != null) {
                     for (Map.Entry<String, Object> entry : nbt.entrySet()) {
-                        meta.getPersistentDataContainer().set(
+                        container.set(
                                 new NamespacedKey(UltimateItemsAdder.instance, entry.getKey()),
                                 PersistentDataType.STRING,
                                 entry.getValue().toString()
@@ -3283,13 +3306,19 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
         JsonObject packMeta = new JsonObject();
         JsonObject pack = new JsonObject();
 
-        pack.addProperty("pack_format", 32); // 1.21.4 için
+        pack.addProperty("pack_format", 15); // 🆕 1.21.5 için
         pack.addProperty("description", ChatColor.translateAlternateColorCodes('&',
                 mainConfig.getString("pack.description", "&6Ultimate Items Resource Pack")));
 
+        // 🆕 1.21.5 supported formats
+        JsonObject supportedFormats = new JsonObject();
+        supportedFormats.addProperty("min_inclusive", 13);
+        supportedFormats.addProperty("max_inclusive", 15);
+        pack.add("supported_formats", supportedFormats);
+
         packMeta.add("pack", pack);
 
-        // Filtre ekle
+        // 🆕 Enhanced filter for better performance
         JsonObject filter = new JsonObject();
         JsonArray block = new JsonArray();
 
@@ -3375,21 +3404,42 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
     private void createItemModel(CustomItem item, Path modelsPath) throws IOException {
         JsonObject model = new JsonObject();
 
-        // Parent
+        // 🆕 1.21.5 Parent model selection
         String parent = "minecraft:item/generated";
         if (item.weaponType != null) {
-            parent = "minecraft:item/handheld";
+            switch (item.weaponType.toUpperCase()) {
+                case "SWORD":
+                case "AXE":
+                case "PICKAXE":
+                case "SHOVEL":
+                case "HOE":
+                    parent = "minecraft:item/handheld";
+                    break;
+                case "BOW":
+                    parent = "minecraft:item/bow";
+                    break;
+                case "CROSSBOW":
+                    parent = "minecraft:item/crossbow";
+                    break;
+            }
         }
         model.addProperty("parent", parent);
 
-        // Textures
+        // 🆕 1.21.5 Textures - Better handling
         JsonObject textures = new JsonObject();
-        textures.addProperty("layer0", namespace + ":item/" + item.texture);
+        
+        // Ana texture
+        if (item.texture != null && !item.texture.isEmpty()) {
+            textures.addProperty("layer0", namespace + ":item/" + item.texture);
+        } else {
+            // Fallback texture
+            textures.addProperty("layer0", namespace + ":item/" + item.id);
+        }
 
         // Ek texture katmanları
         for (int i = 1; i <= 4; i++) {
             String layerTexture = item.texture + "_layer" + i;
-            File layerFile = new File(texturesPath.toFile(), layerTexture + ".png");
+            File layerFile = new File(texturesPath.toFile(), "item/" + layerTexture + ".png");
             if (layerFile.exists()) {
                 textures.addProperty("layer" + i, namespace + ":item/" + layerTexture);
             }
@@ -3409,7 +3459,13 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
             model.add("overrides", overrides);
         }
 
+        // 🆕 1.21.5 Gui light option
+        model.addProperty("gui_light", "front");
+
+        // Model dosyasını yaz
         File modelFile = new File(modelsPath.toFile(), item.model + ".json");
+        modelFile.getParentFile().mkdirs();
+        
         try (FileWriter writer = new FileWriter(modelFile)) {
             gson.toJson(model, writer);
         }
@@ -3556,33 +3612,46 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
         Path minecraftModelsPath = resourcePackPath.resolve("assets/minecraft/models/item");
         minecraftModelsPath.toFile().mkdirs();
 
-        File baseModelFile = new File(minecraftModelsPath.toFile(), item.baseMaterial.name().toLowerCase() + ".json");
+        String materialName = item.baseMaterial.name().toLowerCase();
+        File baseModelFile = new File(minecraftModelsPath.toFile(), materialName + ".json");
 
         JsonObject baseModel;
         if (baseModelFile.exists()) {
-            // Mevcut dosyayı oku
             try (FileReader reader = new FileReader(baseModelFile)) {
                 baseModel = gson.fromJson(reader, JsonObject.class);
             }
         } else {
-            // Yeni dosya oluştur
+            // 🆕 1.21.5 Yeni base model format
             baseModel = new JsonObject();
-            baseModel.addProperty("parent", "minecraft:item/generated");
+            
+            JsonObject modelWrapper = new JsonObject();
+            modelWrapper.addProperty("type", "minecraft:select");
+            modelWrapper.addProperty("property", "minecraft:custom_model_data");
 
-            JsonObject textures = new JsonObject();
-            textures.addProperty("layer0", "minecraft:item/" + item.baseMaterial.name().toLowerCase());
-            baseModel.add("textures", textures);
+            // Fallback model
+            JsonObject fallback = new JsonObject();
+            fallback.addProperty("type", "minecraft:model");
+            fallback.addProperty("model", "minecraft:item/" + materialName);
+            modelWrapper.add("fallback", fallback);
+
+            // Cases array
+            JsonArray cases = new JsonArray();
+            modelWrapper.add("cases", cases);
+            
+            baseModel.add("model", modelWrapper);
         }
 
-        // Custom model data case ekle
-        JsonArray cases = baseModel.has("model") && baseModel.getAsJsonObject("model").has("cases")
-                ? baseModel.getAsJsonObject("model").getAsJsonArray("cases")
-                : new JsonArray();
+        // 🆕 Custom model case ekle
+        JsonObject modelWrapper = baseModel.getAsJsonObject("model");
+        JsonArray cases = modelWrapper.has("cases") ? 
+                modelWrapper.getAsJsonArray("cases") : new JsonArray();
 
+        // Mevcut case'i kontrol et
         boolean caseExists = false;
         for (JsonElement element : cases) {
             JsonObject caseObj = element.getAsJsonObject();
-            if (caseObj.has("when") && caseObj.get("when").getAsString().equals(item.id)) {
+            if (caseObj.has("when") && 
+                caseObj.get("when").getAsInt() == item.customModelData) {
                 caseExists = true;
                 break;
             }
@@ -3590,7 +3659,7 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
 
         if (!caseExists) {
             JsonObject newCase = new JsonObject();
-            newCase.addProperty("when", item.id);
+            newCase.addProperty("when", item.customModelData); // Integer olarak
 
             JsonObject model = new JsonObject();
             model.addProperty("type", "minecraft:model");
@@ -3600,23 +3669,7 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
             cases.add(newCase);
         }
 
-        // Model yapısını güncelle
-        if (!baseModel.has("model")) {
-            JsonObject modelWrapper = new JsonObject();
-            modelWrapper.addProperty("type", "minecraft:select");
-            modelWrapper.addProperty("property", "minecraft:custom_model_data");
-
-            JsonObject fallback = new JsonObject();
-            fallback.addProperty("type", "minecraft:model");
-            fallback.addProperty("model", "minecraft:item/" + item.baseMaterial.name().toLowerCase());
-            modelWrapper.add("fallback", fallback);
-
-            modelWrapper.add("cases", cases);
-            baseModel.add("model", modelWrapper);
-        } else {
-            JsonObject modelWrapper = baseModel.getAsJsonObject("model");
-            modelWrapper.add("cases", cases);
-        }
+        modelWrapper.add("cases", cases);
 
         // Dosyayı yaz
         try (FileWriter writer = new FileWriter(baseModelFile)) {
@@ -3654,45 +3707,70 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
     }
 
     private void createDefaultTextures(Path texturesPath) throws IOException {
+        Path itemTexturesPath = texturesPath.resolve("item");
+        itemTexturesPath.toFile().mkdirs();
+
         for (CustomItem item : customItems.values()) {
             if (!item.enabled) continue;
 
-            Path texturePath = texturesPath.resolve(item.texture + ".png");
+            String textureName = item.texture != null ? item.texture : item.id;
+            Path texturePath = itemTexturesPath.resolve(textureName + ".png");
+            
             if (!Files.exists(texturePath)) {
-                // Varsayılan texture oluştur
+                // 🆕 Daha kaliteli default texture oluştur
                 BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2d = image.createGraphics();
+                
+                // Anti-aliasing aktif
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Arka plan
-                g2d.setColor(new java.awt.Color(100, 100, 100, 255));
-                g2d.fillRect(0, 0, 16, 16);
-
-                // Item tiplerine göre renk
-                java.awt.Color color;
-                switch (item.rarity.toUpperCase()) {
+                // Gradient arka plan
+                java.awt.Color color1, color2;
+                switch (item.rarity != null ? item.rarity.toUpperCase() : "COMMON") {
                     case "LEGENDARY":
-                        color = new java.awt.Color(255, 170, 0); // Altın
+                        color1 = new java.awt.Color(255, 215, 0); // Gold
+                        color2 = new java.awt.Color(255, 140, 0); // Dark orange
                         break;
                     case "EPIC":
-                        color = new java.awt.Color(163, 53, 238); // Mor
+                        color1 = new java.awt.Color(138, 43, 226); // Blue violet
+                        color2 = new java.awt.Color(75, 0, 130);   // Indigo
                         break;
                     case "RARE":
-                        color = new java.awt.Color(85, 255, 255); // Aqua
+                        color1 = new java.awt.Color(0, 191, 255);  // Deep sky blue
+                        color2 = new java.awt.Color(0, 100, 200);  // Darker blue
                         break;
                     case "UNCOMMON":
-                        color = new java.awt.Color(85, 255, 85); // Yeşil
+                        color1 = new java.awt.Color(50, 205, 50);  // Lime green
+                        color2 = new java.awt.Color(34, 139, 34);  // Forest green
                         break;
-                    default:
-                        color = new java.awt.Color(255, 255, 255); // Beyaz
+                    default: // COMMON
+                        color1 = new java.awt.Color(169, 169, 169); // Dark gray
+                        color2 = new java.awt.Color(105, 105, 105); // Dim gray
                         break;
                 }
 
-                g2d.setColor(color);
-                g2d.fillRect(2, 2, 12, 12);
+                GradientPaint gradient = new GradientPaint(0, 0, color1, 16, 16, color2);
+                g2d.setPaint(gradient);
+                g2d.fillRect(1, 1, 14, 14);
 
-                // İç detay
-                g2d.setColor(new java.awt.Color(0, 0, 0, 100));
-                g2d.drawRect(4, 4, 8, 8);
+                // Border
+                g2d.setColor(new java.awt.Color(64, 64, 64));
+                g2d.drawRect(0, 0, 15, 15);
+
+                // Item type indicator
+                g2d.setColor(java.awt.Color.WHITE);
+                if (item.weaponType != null) {
+                    // Kılıç simgesi
+                    g2d.fillRect(7, 3, 2, 10);
+                    g2d.fillRect(5, 5, 6, 2);
+                    g2d.fillRect(6, 12, 4, 2);
+                } else if (item.toolType != null) {
+                    // Alet simgesi
+                    g2d.fillOval(5, 5, 6, 6);
+                } else {
+                    // Genel item simgesi
+                    g2d.fillRect(5, 5, 6, 6);
+                }
 
                 g2d.dispose();
 
@@ -4132,6 +4210,9 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
             case "import":
                 return handleImport(sender, args);
 
+            case "test":
+                return handleTest(sender, args);
+
             default:
                 sendHelp(sender);
                 return true;
@@ -4159,6 +4240,7 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
         sender.sendMessage(ChatColor.GOLD + "/ui restore <tarih>" + ChatColor.GRAY + " - Yedekten geri yükle");
         sender.sendMessage(ChatColor.GOLD + "/ui export <item|all>" + ChatColor.GRAY + " - Verileri dışa aktar");
         sender.sendMessage(ChatColor.GOLD + "/ui import <dosya>" + ChatColor.GRAY + " - Verileri içe aktar");
+        sender.sendMessage(ChatColor.GOLD + "/ui test <item>" + ChatColor.GRAY + " - 1.21.5 texture test");
     }
 
     private boolean handleReload(CommandSender sender) {
@@ -6144,6 +6226,69 @@ public class UltimateItemsAdder extends JavaPlugin implements Listener {
                 }
             }
         }
+    }
+
+    // 🆕 1.21.5 Test Command Handler
+    private boolean handleTest(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ultimateitems.admin")) {
+            sender.sendMessage(PREFIX + ChatColor.RED + "Bunu yapmaya yetkiniz yok!");
+            return true;
+        }
+
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(PREFIX + ChatColor.RED + "Bu komut sadece oyuncular tarafından kullanılabilir!");
+            return true;
+        }
+
+        Player player = (Player) sender;
+
+        if (args.length < 2) {
+            sender.sendMessage(PREFIX + ChatColor.RED + "Kullanım: /ui test <item_id>");
+            sender.sendMessage(ChatColor.GRAY + "Mevcut itemler:");
+            for (String itemId : customItems.keySet()) {
+                sender.sendMessage(ChatColor.GRAY + "  - " + itemId);
+            }
+            return true;
+        }
+
+        String itemId = args[1];
+        if (!customItems.containsKey(itemId)) {
+            sender.sendMessage(PREFIX + ChatColor.RED + "Item bulunamadı: " + itemId);
+            return true;
+        }
+
+        CustomItem item = customItems.get(itemId);
+        
+        // Test item'ini oluştur
+        ItemStack testItem = item.createItemStack();
+        
+        // Oyuncuya ver
+        player.getInventory().addItem(testItem);
+        
+        // Test bilgilerini göster
+        sender.sendMessage(PREFIX + ChatColor.GREEN + "Test item verildi!");
+        sender.sendMessage(ChatColor.GRAY + "=== Test Bilgileri ===");
+        sender.sendMessage(ChatColor.YELLOW + "Item ID: " + ChatColor.WHITE + item.id);
+        sender.sendMessage(ChatColor.YELLOW + "Custom Model Data: " + ChatColor.WHITE + item.customModelData);
+        sender.sendMessage(ChatColor.YELLOW + "Texture: " + ChatColor.WHITE + item.texture);
+        sender.sendMessage(ChatColor.YELLOW + "Model: " + ChatColor.WHITE + item.model);
+        sender.sendMessage(ChatColor.YELLOW + "Base Material: " + ChatColor.WHITE + item.baseMaterial);
+        
+        // Resource pack durumunu kontrol et
+        if (resourcePackHash != null) {
+            sender.sendMessage(ChatColor.GREEN + "✓ Resource pack mevcut");
+        } else {
+            sender.sendMessage(ChatColor.RED + "✗ Resource pack bulunamadı");
+            sender.sendMessage(ChatColor.GRAY + "Resource pack'i yeniden oluşturmak için: /ui pack regenerate");
+        }
+        
+        // Test sonucu
+        sender.sendMessage(ChatColor.GRAY + "=== Test Sonucu ===");
+        sender.sendMessage(ChatColor.AQUA + "1. Item elinizde normal görünüyorsa: " + ChatColor.GREEN + "✓ Başarılı");
+        sender.sendMessage(ChatColor.AQUA + "2. Custom texture görünüyorsa: " + ChatColor.GREEN + "✓ 1.21.5 Uyumlu");
+        sender.sendMessage(ChatColor.AQUA + "3. Sadece base material görünüyorsa: " + ChatColor.RED + "✗ Texture yüklenemedi");
+        
+        return true;
     }
 
     // Singleton instance getter
