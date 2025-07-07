@@ -864,9 +864,7 @@ public class TerraMonicLauncher1 extends Application {
         // ScrollPane oluştur
         ScrollPane scrollPane = new ScrollPane(newsContainer);
         scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.getStyleClass().add("news-scroll");
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setStyle(
                 "-fx-background: transparent;" +
                         "-fx-background-color: transparent;" +
@@ -1855,53 +1853,13 @@ public class TerraMonicLauncher1 extends Application {
         title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
         title.setTextFill(PRIMARY_COLOR);
 
-        // RAM seçimi
-        Label ramLabel = new Label("RAM Miktarı:");
-        ramLabel.setFont(Font.font(FONT_FAMILY, 14));
-        ramLabel.setTextFill(TEXT_COLOR);
+        // Placeholder içerik geri getirildi
+        Label placeholder = new Label("Ayarlar bölümü geliştirme aşamasında.");
+        placeholder.setFont(Font.font(FONT_FAMILY, 16));
+        placeholder.setTextFill(TEXT_COLOR);
 
-        ComboBox<String> ramCombo = new ComboBox<>();
-        ramCombo.getItems().addAll("2 GB", "4 GB", "6 GB", "8 GB", "12 GB", "16 GB");
-        ramCombo.getSelectionModel().select(1);
-
-        // Çözünürlük seçimi
-        Label resLabel = new Label("Çözünürlük:");
-        resLabel.setFont(Font.font(FONT_FAMILY, 14));
-        resLabel.setTextFill(TEXT_COLOR);
-
-        ComboBox<String> resCombo = new ComboBox<>();
-        resCombo.getItems().addAll("1280x720", "1920x1080", "2560x1440", "3840x2160");
-        resCombo.getSelectionModel().select(1);
-
-        // Launcher sıfırlama
-        Button resetBtn = createStyledButton("Launcheri Sıfırla", 180, 35);
-        resetBtn.setOnAction(evt -> {
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Onay");
-            confirm.setHeaderText(null);
-            confirm.setContentText("Launcheri sıfırlamak tüm dosyaları silecek ve uygulamayı kapatacak. Devam etmek istiyor musunuz?");
-            Optional<ButtonType> result = confirm.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                try {
-                    deleteDirectory(TERRAMONIC_PATH);
-                } catch (IOException ex) {
-                    showError("Sıfırlama hatası: " + ex.getMessage());
-                    return;
-                }
-                showInfo("Launcher sıfırlandı. Lütfen uygulamayı yeniden başlatın.");
-                Platform.exit();
-            }
-        });
-
-        settingsPanel.getChildren().addAll(
-                title,
-                new Separator(),
-                new HBox(10, ramLabel, ramCombo),
-                new HBox(10, resLabel, resCombo),
-                new Separator(),
-                resetBtn
-        );
-
+        settingsPanel.getChildren().addAll(title, new Separator(), placeholder);
+         
         return settingsPanel;
     }
 
@@ -2056,7 +2014,7 @@ public class TerraMonicLauncher1 extends Application {
         playButton = createStyledButton("OYUNU BAŞLAT", 200, 35);
         playButton.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
         playButton.setAlignment(Pos.CENTER);
-        playButton.setTranslateX(-13); // 2px sağa kaydır
+        playButton.setTranslateX(-15); // 2px sağa kaydır
         playButton.setTranslateY(-5);
 
         downloadProgress = new ProgressBar(0);
@@ -2074,10 +2032,39 @@ public class TerraMonicLauncher1 extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // RAM ve Çözünürlük kutuları geri eklendi
+        Label ramLabel = new Label("RAM:");
+        ramLabel.setFont(Font.font(FONT_FAMILY, 14));
+        ramLabel.setTextFill(TEXT_COLOR);
+
+        ComboBox<String> ramComboBox = new ComboBox<>();
+        List<String> ramOptions = Arrays.asList("2 GB", "4 GB", "6 GB", "8 GB", "12 GB", "16 GB");
+        ramComboBox.getItems().addAll(ramOptions);
+        ramComboBox.getSelectionModel().select(1);
+
+        Label resolutionLabel = new Label("Çözünürlük:");
+        resolutionLabel.setFont(Font.font(FONT_FAMILY, 14));
+        resolutionLabel.setTextFill(TEXT_COLOR);
+
+        ComboBox<String> resolutionComboBox = new ComboBox<>();
+        List<String> resolutionOptions = Arrays.asList("1280x720", "1920x1080", "2560x1440", "3840x2160");
+        resolutionComboBox.getItems().addAll(resolutionOptions);
+        resolutionComboBox.getSelectionModel().select(1);
+
+        HBox ramBox = new HBox(5);
+        ramBox.setAlignment(Pos.CENTER_LEFT);
+        ramBox.getChildren().addAll(ramLabel, ramComboBox);
+
+        HBox resolutionBox = new HBox(5);
+        resolutionBox.setAlignment(Pos.CENTER_LEFT);
+        resolutionBox.getChildren().addAll(resolutionLabel, resolutionComboBox);
+
         bottomPanel.getChildren().addAll(
                 playButton,
                 new VBox(5, downloadProgress, statusLabel),
-                spacer
+                spacer,
+                ramBox,
+                resolutionBox
         );
         return bottomPanel;
     }
