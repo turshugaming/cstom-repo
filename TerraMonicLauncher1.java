@@ -250,6 +250,9 @@ public class TerraMonicLauncher1 extends Application {
                 Path librariesDir = TERRAMONIC_PATH.resolve("libraries");
                 Files.createDirectories(librariesDir);
                 
+                // YENİ: SLF4J kütüphanelerini ekle
+                downloadSLF4JLibraries(librariesDir);
+                
                 // Library'leri indir
                 JSONArray libraries = versionJson.getJSONArray("libraries");
                 int totalLibs = libraries.length();
@@ -363,6 +366,51 @@ public class TerraMonicLauncher1 extends Application {
         });
         
         executorService.submit(libraryTask);
+    }
+
+    /**
+     * YENİ: SLF4J KÜTÜPHANELERİNİ İNDİRİR (c2me, badoptimizations vb modlar için)
+     */
+    private void downloadSLF4JLibraries(Path librariesDir) throws IOException {
+        // SLF4J kütüphaneleri
+        String[][] slf4jLibraries = {
+            {"org/slf4j", "slf4j-api", "2.0.13"},
+            {"org/slf4j", "slf4j-nop", "2.0.13"},
+            {"org/lwjgl", "lwjgl", "3.3.3"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.3"}
+        };
+        
+        for (String[] lib : slf4jLibraries) {
+            String groupPath = lib[0];
+            String artifactId = lib[1];
+            String version = lib[2];
+            
+            // Maven path oluştur
+            Path libPath = librariesDir.resolve(groupPath)
+                    .resolve(artifactId)
+                    .resolve(version)
+                    .resolve(artifactId + "-" + version + ".jar");
+            
+            if (!Files.exists(libPath)) {
+                Files.createDirectories(libPath.getParent());
+                
+                // Maven Central URL
+                String downloadUrl = "https://repo1.maven.org/maven2/" + 
+                    groupPath + "/" + artifactId + "/" + version + "/" + 
+                    artifactId + "-" + version + ".jar";
+                
+                try {
+                    Platform.runLater(() -> statusLabel.setText("SLF4J indiriliyor: " + artifactId));
+                    downloadFile(downloadUrl, libPath);
+                    System.out.println("✅ SLF4J kütüphanesi indirildi: " + artifactId + "-" + version + ".jar");
+                } catch (IOException e) {
+                    System.out.println("⚠️ SLF4J kütüphanesi indirilemedi: " + artifactId + " - " + e.getMessage());
+                }
+            } else {
+                System.out.println("✅ SLF4J kütüphanesi zaten mevcut: " + artifactId + "-" + version + ".jar");
+            }
+        }
     }
 
     /**
@@ -2034,9 +2082,10 @@ public class TerraMonicLauncher1 extends Application {
 
         addSystemTrayIcon();
 
-        playButton = createStyledButton("OYUNU BAŞLAT", 200, 40);
+        playButton = createStyledButton("🚀 OYUNU BAŞLAT", 220, 45);
         playButton.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
         playButton.setAlignment(Pos.CENTER);
+        playButton.setTranslateX(-20); // Sola kaydır
 
         downloadProgress = new ProgressBar(0);
         downloadProgress.setPrefWidth(200);
@@ -2052,25 +2101,10 @@ public class TerraMonicLauncher1 extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // YENİ: OYUN VERSİYON BİLGİSİ
-        VBox versionInfo = new VBox(5);
-        versionInfo.setAlignment(Pos.CENTER_RIGHT);
-        
-        Label mcVersion = new Label("Minecraft " + MINECRAFT_VERSION);
-        mcVersion.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 12));
-        mcVersion.setTextFill(PRIMARY_COLOR);
-        
-        Label fabricVersion = new Label("Fabric " + FABRIC_VERSION);
-        fabricVersion.setFont(Font.font(FONT_FAMILY, 12));
-        fabricVersion.setTextFill(TEXT_SECONDARY);
-        
-        versionInfo.getChildren().addAll(mcVersion, fabricVersion);
-
         bottomPanel.getChildren().addAll(
                 playButton,
                 new VBox(5, downloadProgress, statusLabel),
-                spacer,
-                versionInfo
+                spacer
         );
 
         return bottomPanel;
@@ -3083,7 +3117,7 @@ public class TerraMonicLauncher1 extends Application {
         titleBar.setPadding(new Insets(10, 15, 10, 15));
         titleBar.setStyle("-fx-background-color: " + toHexString(BACKGROUND_COLOR) + ";");
 
-        Label titleLabel = new Label("TerraMonic Launcher " + currentLauncherVersion);
+        Label titleLabel = new Label("TerraMonic");
         titleLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
         titleLabel.setTextFill(PRIMARY_COLOR);
 
