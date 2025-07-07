@@ -114,7 +114,7 @@ public class TerraMonicLauncher1 extends Application {
     // UI elemanları
     private Button playButton;
     private ProgressBar downloadProgress;
-    private Label statusLabel;
+    private final Label statusLabel = new Label("");
     private ImageView userAvatar;
     private ExecutorService executorService;
 
@@ -1732,6 +1732,7 @@ public class TerraMonicLauncher1 extends Application {
         VBox modPanel = new VBox(20);
         modPanel.setPadding(new Insets(20));
         modPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+        VBox.setVgrow(modPanel, Priority.ALWAYS);
 
         // Başlık
         Label title = new Label("MOD YÖNETİMİ");
@@ -1741,6 +1742,7 @@ public class TerraMonicLauncher1 extends Application {
         // Mod listesi
         ListView<String> modListView = new ListView<>();
         modListView.setPrefHeight(300);
+        VBox.setVgrow(modListView, Priority.ALWAYS);
         modListView.setStyle(
                 "-fx-background-color: #1A1A1A;" +
                         "-fx-text-fill: white;" +
@@ -1844,6 +1846,7 @@ public class TerraMonicLauncher1 extends Application {
         VBox accountPanel = new VBox(20);
         accountPanel.setPadding(new Insets(20));
         accountPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+        VBox.setVgrow(accountPanel, Priority.ALWAYS);
 
         // Başlık
         Label title = new Label("HESAP");
@@ -1868,6 +1871,7 @@ public class TerraMonicLauncher1 extends Application {
         VBox settingsPanel = new VBox(20);
         settingsPanel.setPadding(new Insets(20));
         settingsPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+        VBox.setVgrow(settingsPanel, Priority.ALWAYS);
 
         Label title = new Label("AYARLAR");
         title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
@@ -2045,7 +2049,6 @@ public class TerraMonicLauncher1 extends Application {
         downloadProgress.setStyle("-fx-accent: " + toHexString(PRIMARY_COLOR) + ";");
         downloadProgress.setVisible(false);
 
-        statusLabel = new Label("");
         statusLabel.setFont(Font.font(FONT_FAMILY, 14));
         statusLabel.setTextFill(TEXT_SECONDARY);
         statusLabel.setVisible(false);
