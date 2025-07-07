@@ -457,6 +457,131 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
+     * Fabric kurulumunu yapar
+     */
+    private void setupFabric() throws IOException, InterruptedException {
+        String fabricVersionName = "fabric-loader-" + FABRIC_VERSION + "-" + MINECRAFT_VERSION;
+        Path versionsDir = TERRAMONIC_PATH.resolve("versions");
+        Path fabricVersionDir = versionsDir.resolve(fabricVersionName);
+        Path fabricJarPath = fabricVersionDir.resolve(fabricVersionName + ".jar");
+        Path fabricJsonPath = fabricVersionDir.resolve(fabricVersionName + ".json");
+
+        // Fabric klasörünü oluştur
+        Files.createDirectories(fabricVersionDir);
+
+        // Client jar'ı indir
+        if (!Files.exists(fabricJarPath) && launcherConfig != null && launcherConfig.has("jar")) {
+            System.out.println("Client jar indiriliyor...");
+            String clientJarUrl = launcherConfig.getString("jar");
+            downloadFile(clientJarUrl, fabricJarPath);
+            System.out.println("Client jar indirildi: " + fabricJarPath);
+        }
+
+        // Fabric installer'ı indir ve çalıştır
+        if (!Files.exists(fabricJsonPath)) {
+            System.out.println("Fabric installer indiriliyor...");
+            
+            Path fabricInstallerPath = TERRAMONIC_PATH.resolve("fabric-installer.jar");
+            downloadFile(FABRIC_INSTALLER_URL, fabricInstallerPath);
+
+            System.out.println("Fabric kuruluyor...");
+
+            // Fabric installer'ı çalıştır
+            ProcessBuilder fabricInstaller = new ProcessBuilder(
+                "java", "-jar", fabricInstallerPath.toString(),
+                "client",
+                "-mcversion", MINECRAFT_VERSION,
+                "-loader", FABRIC_VERSION,
+                "-dir", TERRAMONIC_PATH.toString(),
+                "-noprofile"
+            );
+            
+            fabricInstaller.redirectErrorStream(true);
+            Process fabricProcess = fabricInstaller.start();
+            
+            // Process output'unu oku
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(fabricProcess.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("Fabric Installer: " + line);
+                }
+            }
+            
+            int exitCode = fabricProcess.waitFor();
+            
+            if (exitCode != 0) {
+                throw new IOException("Fabric kurulumu başarısız oldu, çıkış kodu: " + exitCode);
+            }
+
+            // Installer'ı sil
+            Files.deleteIfExists(fabricInstallerPath);
+            
+            System.out.println("Fabric başarıyla kuruldu: " + fabricVersionName);
+        }
+    }
+
+    /**
+     * Haber panelini oluşturur
+     */
+    private ScrollPane createNewsPanel() {
+        // Haberleri içeren panel
+        VBox newsContainer = new VBox(20);
+        newsContainer.setPadding(new Insets(20));
+
+        // Başlık
+        Label newsTitle = new Label("HABERLER & DUYURULAR");
+        newsTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
+        newsTitle.setTextFill(PRIMARY_COLOR);
+
+        newsContainer.getChildren().add(newsTitle);
+        newsContainer.getChildren().add(new Separator());
+
+        // Haberler için kapsayıcı
+        VBox newsListContainer = new VBox(15);
+
+        // Haberler
+        for (NewsItem news : newsList) {
+            VBox newsCard = createNewsCard(news);
+            newsListContainer.getChildren().add(newsCard);
+        }
+
+        newsContainer.getChildren().add(newsListContainer);
+
+        // Alt kısım - TerraMonic websitesi bağlantısı
+        HBox bottomLink = new HBox();
+        bottomLink.setAlignment(Pos.CENTER);
+        bottomLink.setPadding(new Insets(30, 0, 20, 0));
+
+        Hyperlink websiteLink = new Hyperlink("TerraMonic Web Sitesini Ziyaret Et");
+        websiteLink.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 16));
+        websiteLink.setTextFill(PRIMARY_COLOR);
+        websiteLink.setOnAction(e -> {
+            try {
+                Desktop.getDesktop().browse(new URI(TERRAMONIC_URL));
+            } catch (Exception ex) {
+                System.out.println("Web sitesi açılamadı: " + ex.getMessage());
+            }
+        });
+
+        bottomLink.getChildren().add(websiteLink);
+        newsContainer.getChildren().add(bottomLink);
+
+        // ScrollPane oluştur
+        ScrollPane scrollPane = new ScrollPane(newsContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.getStyleClass().add("news-scroll");
+        scrollPane.setStyle(
+                "-fx-background: transparent;" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-padding: 0;"
+        );
+
+        return scrollPane;
+    }
+
+    /**
      * Splash ekranını gösterir
      */
     private void showSplashScreen() {
@@ -685,70 +810,6 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * Fabric kurulumunu yapar
-     */
-    private void setupFabric() throws IOException, InterruptedException {
-        String fabricVersionName = "fabric-loader-" + FABRIC_VERSION + "-" + MINECRAFT_VERSION;
-        Path versionsDir = TERRAMONIC_PATH.resolve("versions");
-        Path fabricVersionDir = versionsDir.resolve(fabricVersionName);
-        Path fabricJarPath = fabricVersionDir.resolve(fabricVersionName + ".jar");
-        Path fabricJsonPath = fabricVersionDir.resolve(fabricVersionName + ".json");
-
-        // Fabric klasörünü oluştur
-        Files.createDirectories(fabricVersionDir);
-
-        // Client jar'ı indir
-        if (!Files.exists(fabricJarPath) && launcherConfig != null && launcherConfig.has("jar")) {
-            System.out.println("Client jar indiriliyor...");
-            String clientJarUrl = launcherConfig.getString("jar");
-            downloadFile(clientJarUrl, fabricJarPath);
-            System.out.println("Client jar indirildi: " + fabricJarPath);
-        }
-
-        // Fabric installer'ı indir ve çalıştır
-        if (!Files.exists(fabricJsonPath)) {
-            System.out.println("Fabric installer indiriliyor...");
-            
-            Path fabricInstallerPath = TERRAMONIC_PATH.resolve("fabric-installer.jar");
-            downloadFile(FABRIC_INSTALLER_URL, fabricInstallerPath);
-
-            System.out.println("Fabric kuruluyor...");
-
-            // Fabric installer'ı çalıştır
-            ProcessBuilder fabricInstaller = new ProcessBuilder(
-                "java", "-jar", fabricInstallerPath.toString(),
-                "client",
-                "-mcversion", MINECRAFT_VERSION,
-                "-loader", FABRIC_VERSION,
-                "-dir", TERRAMONIC_PATH.toString(),
-                "-noprofile"
-            );
-            
-            fabricInstaller.redirectErrorStream(true);
-            Process fabricProcess = fabricInstaller.start();
-            
-            // Process output'unu oku
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(fabricProcess.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println("Fabric Installer: " + line);
-                }
-            }
-            
-            int exitCode = fabricProcess.waitFor();
-            
-            if (exitCode != 0) {
-                throw new IOException("Fabric kurulumu başarısız oldu, çıkış kodu: " + exitCode);
-            }
-
-            // Installer'ı sil
-            Files.deleteIfExists(fabricInstallerPath);
-            
-            System.out.println("Fabric başarıyla kuruldu: " + fabricVersionName);
-        }
-    }
-
-    /**
      * Dekoratif arka plan oluşturur
      */
     private AnchorPane createDecorativeBackground() {
@@ -785,7 +846,201 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * Dosyayı indirir
+     * Login ekranını gösterir
+     */
+    private void showLoginScreen() {
+        // Ana panel
+        BorderPane root = new BorderPane();
+        root.setBackground(new Background(new BackgroundFill(
+                BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        // Arka plan dekoratif öğeler
+        AnchorPane decorPane = createDecorativeBackground();
+
+        // Sol panel - Logo
+        VBox leftPanel = new VBox();
+        leftPanel.setPadding(new Insets(50, 30, 50, 50));
+        leftPanel.setAlignment(Pos.CENTER_LEFT);
+        leftPanel.setMinWidth(windowWidth * 0.5);
+
+        // Logo
+        ImageView logoView = new ImageView();
+        if (launcherIcon != null && !launcherIcon.isError()) {
+            logoView.setImage(launcherIcon);
+            logoView.setFitWidth(180);
+            logoView.setFitHeight(180);
+            logoView.setPreserveRatio(true);
+        } else {
+            // Alternatif text logo
+            Text logoText = new Text("TerraMonic");
+            logoText.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 60));
+            logoText.setFill(PRIMARY_COLOR);
+
+            // Glow effect
+            Glow glow = new Glow();
+            glow.setLevel(0.6);
+            logoText.setEffect(glow);
+            leftPanel.getChildren().add(logoText);
+        }
+
+        // Slogan
+        Label sloganLabel = new Label("Minecraft Deneyimini\nYeniden Keşfet");
+        sloganLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 32));
+        sloganLabel.setTextFill(TEXT_COLOR);
+        sloganLabel.setWrapText(true);
+
+        // Alt slogan
+        Label subSloganLabel = new Label("TerraMonic sunucularına özel, optimize edilmiş launcher ile\noyun deneyimini maksimuma çıkar.");
+        subSloganLabel.setFont(Font.font(FONT_FAMILY, 16));
+        subSloganLabel.setTextFill(TEXT_SECONDARY);
+        subSloganLabel.setWrapText(true);
+
+        // Sol panel sunucu istatistikleri
+        HBox statsBox = new HBox(30);
+        statsBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Çevrimiçi oyuncu
+        VBox onlineStats = createStatBox("127", "Çevrimiçi Oyuncu");
+
+        // Sunucu durumu
+        VBox serverStats = createStatBox("AÇIK", "Sunucu Durumu");
+        serverStats.getChildren().get(0).setStyle("-fx-text-fill: " + toHexString(PRIMARY_COLOR) + ";");
+
+        statsBox.getChildren().addAll(onlineStats, serverStats);
+
+        // Sol paneli düzenle
+        leftPanel.getChildren().addAll(logoView, new VBox(20), sloganLabel, new VBox(10),
+                subSloganLabel, new VBox(40), statsBox);
+
+        // Sağ panel - Giriş formu
+        VBox rightPanel = new VBox(20);
+        rightPanel.setPadding(new Insets(50));
+        rightPanel.setAlignment(Pos.CENTER);
+        rightPanel.setMinWidth(windowWidth * 0.5);
+        rightPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+
+        // Giriş başlığı
+        Label loginTitle = new Label("TerraMonic'e Hoşgeldiniz");
+        loginTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 28));
+        loginTitle.setTextFill(PRIMARY_COLOR);
+
+        // Kullanıcı adı giriş alanı
+        TextField usernameField = createStyledTextField("Minecraft kullanıcı adınız");
+
+        // Checkbox
+        CheckBox rememberBox = new CheckBox("Kullanıcı adımı hatırla");
+        rememberBox.setFont(Font.font(FONT_FAMILY, 14));
+        rememberBox.setTextFill(TEXT_COLOR);
+        rememberBox.setSelected(rememberUser);
+
+        // Giriş butonu
+        Button loginButton = createStyledButton("GİRİŞ YAP", 200, 50);
+
+        // Giriş butonuna aksiyon ekle
+        loginButton.setOnAction(e -> {
+            playerName = usernameField.getText().trim();
+            rememberUser = rememberBox.isSelected();
+
+            if (playerName.isEmpty()) {
+                // Hata animasyonu
+                shakeNode(usernameField);
+                usernameField.setStyle(usernameField.getStyle() + "-fx-border-color: #FF3A3A;");
+                return;
+            }
+
+            // Giriş başarılı ise ana ekrana geç
+            playButtonClickAnimation(loginButton);
+            transitionToMainScreen();
+        });
+
+        // Launcher versiyonu
+        Label versionLabel = new Label("TerraMonic Launcher " + currentLauncherVersion);
+        versionLabel.setFont(Font.font(FONT_FAMILY, 12));
+        versionLabel.setTextFill(TEXT_SECONDARY);
+
+        // Social media links
+        HBox socialLinks = new HBox(15);
+        socialLinks.setAlignment(Pos.CENTER);
+
+        String[] socialIcons = {"discord", "youtube", "instagram"};
+        for (String social : socialIcons) {
+            Circle socialCircle = new Circle(20);
+            socialCircle.setFill(Color.web("#222222"));
+            socialCircle.setStroke(PRIMARY_COLOR);
+            socialCircle.setStrokeWidth(1.5);
+
+            Label socialLabel = new Label(social.substring(0, 1).toUpperCase());
+            socialLabel.setTextFill(PRIMARY_COLOR);
+            socialLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
+
+            StackPane socialStack = new StackPane(socialCircle, socialLabel);
+            socialStack.setCursor(Cursor.HAND);
+
+            // Hover efekti
+            socialStack.setOnMouseEntered(event -> {
+                socialCircle.setFill(PRIMARY_COLOR);
+                socialLabel.setTextFill(Color.BLACK);
+            });
+
+            socialStack.setOnMouseExited(event -> {
+                socialCircle.setFill(Color.web("#222222"));
+                socialLabel.setTextFill(PRIMARY_COLOR);
+            });
+
+            socialLinks.getChildren().add(socialStack);
+        }
+
+        // Sağ paneli düzenle
+        rightPanel.getChildren().addAll(
+                loginTitle,
+                new VBox(30),
+                usernameField,
+                rememberBox,
+                new VBox(20),
+                loginButton,
+                new Region() {{
+                    setVgrow(this, Priority.ALWAYS);
+                }},
+                socialLinks,
+                versionLabel
+        );
+
+        // Ana düzeni ayarla
+        StackPane mainContent = new StackPane();
+        mainContent.getChildren().addAll(decorPane);
+
+        HBox contentBox = new HBox();
+        contentBox.getChildren().addAll(leftPanel, rightPanel);
+        mainContent.getChildren().add(contentBox);
+
+        // Sürükle bırak için pencere kontrolü
+        setupWindowControls(mainContent);
+
+        // Üst çubuk ekle
+        VBox rootWithTitleBar = new VBox();
+        rootWithTitleBar.getChildren().addAll(createTitleBar(), mainContent);
+        root.setCenter(rootWithTitleBar);
+
+        // Yeni sahne oluştur ve animasyonla göster
+        Scene loginScene = new Scene(root, windowWidth, windowHeight);
+        loginScene.setFill(BACKGROUND_COLOR);
+
+        // Sahne geçişi yap
+        transitionToScene(loginScene);
+    }
+
+    /**
+     * Ana ekrana geçiş yapar
+     */
+    private void transitionToMainScreen() {
+        // Basit bir sahne geçişi - daha detaylı UI oluşturulabilir
+        Platform.runLater(() -> {
+            showInfo("Oyun başlatma ekranına geçiliyor...");
+        });
+    }
+
+    /**
+     * Utility metodları
      */
     private void downloadFile(String url, Path target) throws IOException {
         try (InputStream in = new URL(url).openStream();
@@ -798,9 +1053,6 @@ public class TerraMonicLauncher1 extends Application {
         }
     }
 
-    /**
-     * JSON dosyasını okur
-     */
     private String readJsonFromUrl(String url) throws IOException {
         URL jsonUrl = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) jsonUrl.openConnection();
@@ -819,9 +1071,6 @@ public class TerraMonicLauncher1 extends Application {
         }
     }
 
-    /**
-     * Klasörü ve içeriğini siler
-     */
     private void deleteDirectory(Path dir) throws IOException {
         if (Files.exists(dir)) {
             Files.walk(dir)
@@ -836,9 +1085,6 @@ public class TerraMonicLauncher1 extends Application {
         }
     }
 
-    /**
-     * Color nesnesini hex string'e dönüştürür
-     */
     private String toHexString(Color color) {
         return String.format("#%02X%02X%02X",
                 (int) (color.getRed() * 255),
@@ -846,9 +1092,6 @@ public class TerraMonicLauncher1 extends Application {
                 (int) (color.getBlue() * 255));
     }
 
-    /**
-     * Hata mesajı gösterir
-     */
     private void showError(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -859,9 +1102,6 @@ public class TerraMonicLauncher1 extends Application {
         });
     }
 
-    /**
-     * Bilgi mesajı gösterir
-     */
     private void showInfo(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -872,23 +1112,389 @@ public class TerraMonicLauncher1 extends Application {
         });
     }
 
-    // Placeholder metodlar - UI kısmını buraya ekleyelim
-    
-    private void showLoginScreen() {
-        // Login screen implementation placeholder
-        System.out.println("Login screen would be shown here");
-        // For now, skip to main screen
-        transitionToMainScreen();
-    }
-    
-    private void transitionToMainScreen() {
-        // Main screen implementation placeholder  
-        System.out.println("Main screen would be shown here");
-    }
-    
     private void updateSystemIcons() {
-        // System icons update placeholder
-        System.out.println("System icons would be updated here");
+        // System icon update implementation
+        BufferedImage iconImage = null;
+
+        try {
+            if (Files.exists(ICON_FILE)) {
+                iconImage = ImageIO.read(ICON_FILE.toFile());
+            }
+        } catch (IOException e) {
+            System.out.println("PNG dosyası okunurken hata: " + ICON_FILE + ", Hata=" + e.getMessage());
+        }
+
+        // Fallback icon if PNG can't be loaded
+        if (iconImage == null) {
+            iconImage = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = iconImage.createGraphics();
+            g.setColor(new java.awt.Color(0, 255, 0)); // Green circle
+            g.fillOval(0, 0, 64, 64);
+            g.setColor(java.awt.Color.BLACK);
+            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 24));
+            g.drawString("T", 20, 40); // 'T' for TerraMonic
+            g.dispose();
+        }
+
+        // Windows taskbar icon
+        if (Taskbar.isTaskbarSupported()) {
+            Taskbar taskbar = Taskbar.getTaskbar();
+            if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                try {
+                    taskbar.setIconImage(iconImage);
+                    System.out.println("Görev çubuğu ikonu ayarlandı: " + ICON_FILE);
+                } catch (UnsupportedOperationException e) {
+                    System.out.println("Görev çubuğu ikonu güncellenemedi: " + e.getMessage());
+                }
+            }
+        }
+
+        // System tray icon
+        if (SystemTray.isSupported()) {
+            try {
+                SystemTray tray = SystemTray.getSystemTray();
+                TrayIcon trayIcon = new TrayIcon(iconImage, "TerraMonic Launcher");
+                trayIcon.setImageAutoSize(true);
+
+                // Tray menu
+                PopupMenu popup = new PopupMenu();
+                MenuItem exitItem = new MenuItem("Çıkış");
+                exitItem.addActionListener(event -> Platform.exit());
+                popup.add(exitItem);
+                trayIcon.setPopupMenu(popup);
+
+                tray.add(trayIcon);
+                System.out.println("Sistem tepsisi ikonu ayarlandı: " + ICON_FILE);
+            } catch (AWTException e) {
+                System.out.println("Sistem tepsisi ikonu ayarlanamadı: " + e.getMessage());
+            }
+        }
+    }
+
+    // UI Helper methods
+    private VBox createStatBox(String value, String label) {
+        Label valueLabel = new Label(value);
+        valueLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 28));
+        valueLabel.setTextFill(TEXT_COLOR);
+
+        Label descLabel = new Label(label);
+        descLabel.setFont(Font.font(FONT_FAMILY, 14));
+        descLabel.setTextFill(TEXT_SECONDARY);
+
+        VBox statBox = new VBox(5);
+        statBox.setAlignment(Pos.CENTER_LEFT);
+        statBox.getChildren().addAll(valueLabel, descLabel);
+
+        return statBox;
+    }
+
+    private TextField createStyledTextField(String promptText) {
+        TextField textField = new TextField();
+        textField.setPromptText(promptText);
+        textField.setPrefHeight(45);
+        textField.setFont(Font.font(FONT_FAMILY, 14));
+        textField.setStyle(
+                "-fx-background-color: #1A1A1A;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-prompt-text-fill: #555555;" +
+                        "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-border-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-border-color: #333333;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-padding: 10px;"
+        );
+
+        // Focus effect
+        textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                textField.setStyle(
+                        "-fx-background-color: #1A1A1A;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-prompt-text-fill: #555555;" +
+                                "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                                "-fx-border-radius: " + BUTTON_RADIUS + "px;" +
+                                "-fx-border-color: " + toHexString(PRIMARY_COLOR) + ";" +
+                                "-fx-border-width: 1.5px;" +
+                                "-fx-padding: 10px;"
+                );
+            } else {
+                textField.setStyle(
+                        "-fx-background-color: #1A1A1A;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-prompt-text-fill: #555555;" +
+                                "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                                "-fx-border-radius: " + BUTTON_RADIUS + "px;" +
+                                "-fx-border-color: #333333;" +
+                                "-fx-border-width: 1px;" +
+                                "-fx-padding: 10px;"
+                );
+            }
+        });
+
+        return textField;
+    }
+
+    private Button createStyledButton(String text, double width, double height) {
+        Button button = new Button(text);
+        button.setPrefSize(width, height);
+        button.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 16));
+
+        // Shadow effect
+        DropShadow shadow = new DropShadow();
+        shadow.setColor(SHADOW_COLOR);
+        shadow.setRadius(15);
+        shadow.setSpread(0.15);
+        button.setEffect(shadow);
+
+        button.setStyle(
+                "-fx-background-color: " + toHexString(PRIMARY_COLOR) + ";" +
+                        "-fx-text-fill: black;" +
+                        "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-cursor: hand;"
+        );
+
+        // Hover effects
+        button.setOnMouseEntered(e -> {
+            button.setStyle(
+                    "-fx-background-color: " + toHexString(PRIMARY_HIGHLIGHT) + ";" +
+                            "-fx-text-fill: black;" +
+                            "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                            "-fx-cursor: hand;"
+            );
+
+            ScaleTransition scale = new ScaleTransition(Duration.millis(150), button);
+            scale.setToX(1.05);
+            scale.setToY(1.05);
+            scale.play();
+        });
+
+        button.setOnMouseExited(e -> {
+            button.setStyle(
+                    "-fx-background-color: " + toHexString(PRIMARY_COLOR) + ";" +
+                            "-fx-text-fill: black;" +
+                            "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                            "-fx-cursor: hand;"
+            );
+
+            ScaleTransition scale = new ScaleTransition(Duration.millis(150), button);
+            scale.setToX(1.0);
+            scale.setToY(1.0);
+            scale.play();
+        });
+
+        return button;
+    }
+
+    private void playButtonClickAnimation(Button button) {
+        ScaleTransition scaleDown = new ScaleTransition(Duration.millis(100), button);
+        scaleDown.setToX(0.9);
+        scaleDown.setToY(0.9);
+
+        ScaleTransition scaleUp = new ScaleTransition(Duration.millis(100), button);
+        scaleUp.setToX(1.0);
+        scaleUp.setToY(1.0);
+
+        scaleDown.setOnFinished(e -> scaleUp.play());
+        scaleDown.play();
+    }
+
+    private void shakeNode(javafx.scene.Node node) {
+        TranslateTransition shake = new TranslateTransition(Duration.millis(50), node);
+        shake.setFromX(0);
+        shake.setByX(10);
+        shake.setCycleCount(6);
+        shake.setAutoReverse(true);
+        shake.play();
+    }
+
+    private void transitionToScene(Scene newScene) {
+        if (currentScene != null) {
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(300), currentScene.getRoot());
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(e -> {
+                mainStage.setScene(newScene);
+                currentScene = newScene;
+
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(300), newScene.getRoot());
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+            fadeOut.play();
+        } else {
+            mainStage.setScene(newScene);
+            currentScene = newScene;
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), newScene.getRoot());
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+        }
+    }
+
+    private void setupWindowControls(javafx.scene.Node content) {
+        content.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+
+        content.setOnMouseDragged(event -> {
+            mainStage.setX(event.getScreenX() - xOffset);
+            mainStage.setY(event.getScreenY() - yOffset);
+        });
+    }
+
+    private BorderPane createTitleBar() {
+        BorderPane titleBar = new BorderPane();
+        titleBar.setPadding(new Insets(10, 15, 10, 15));
+        titleBar.setStyle("-fx-background-color: " + toHexString(BACKGROUND_COLOR) + ";");
+
+        // Sol kısım - Launcher adı
+        Label titleLabel = new Label("TerraMonic Launcher " + currentLauncherVersion);
+        titleLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
+        titleLabel.setTextFill(PRIMARY_COLOR);
+
+        HBox leftBox = new HBox(10);
+        leftBox.setAlignment(Pos.CENTER_LEFT);
+
+        if (launcherIcon != null && !launcherIcon.isError()) {
+            ImageView iconView = new ImageView(launcherIcon);
+            iconView.setFitHeight(20);
+            iconView.setFitWidth(20);
+            iconView.setPreserveRatio(true);
+            leftBox.getChildren().addAll(iconView, titleLabel);
+        } else {
+            leftBox.getChildren().add(titleLabel);
+        }
+
+        titleBar.setLeft(leftBox);
+
+        // Sağ kısım - Pencere kontrolleri
+        HBox windowControls = new HBox(10);
+        windowControls.setAlignment(Pos.CENTER_RIGHT);
+
+        Button minimizeBtn = createWindowControlButton("—", "#555555");
+        minimizeBtn.setOnAction(e -> mainStage.setIconified(true));
+
+        Button closeBtn = createWindowControlButton("✕", "#FF3A3A");
+        closeBtn.setOnAction(e -> {
+            if (executorService != null) {
+                executorService.shutdownNow();
+            }
+            Platform.exit();
+        });
+
+        windowControls.getChildren().addAll(minimizeBtn, closeBtn);
+        titleBar.setRight(windowControls);
+
+        // Sürükleme için mouse event'leri
+        titleBar.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+
+        titleBar.setOnMouseDragged(event -> {
+            mainStage.setX(event.getScreenX() - xOffset);
+            mainStage.setY(event.getScreenY() - yOffset);
+        });
+
+        return titleBar;
+    }
+
+    private Button createWindowControlButton(String text, String color) {
+        Button button = new Button(text);
+        button.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 10));
+        button.setPrefSize(20, 20);
+        button.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: " + color + ";" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-padding: 0;" +
+                        "-fx-cursor: hand;"
+        );
+
+        button.setOnMouseEntered(e ->
+                button.setStyle(
+                        "-fx-background-color: " + color + ";" +
+                                "-fx-text-fill: black;" +
+                                "-fx-background-radius: 5px;" +
+                                "-fx-border-color: transparent;" +
+                                "-fx-padding: 0;" +
+                                "-fx-cursor: hand;"
+                )
+        );
+
+        button.setOnMouseExited(e ->
+                button.setStyle(
+                        "-fx-background-color: transparent;" +
+                                "-fx-text-fill: " + color + ";" +
+                                "-fx-border-color: transparent;" +
+                                "-fx-padding: 0;" +
+                                "-fx-cursor: hand;"
+                )
+        );
+
+        return button;
+    }
+
+    private VBox createNewsCard(NewsItem news) {
+        VBox card = new VBox(10);
+        card.setPadding(new Insets(15));
+        card.setStyle(
+                "-fx-background-color: #1A1A1A;" +
+                        "-fx-background-radius: 10px;" +
+                        "-fx-border-radius: 10px;" +
+                        "-fx-border-color: #333333;" +
+                        "-fx-border-width: 1px;"
+        );
+
+        // Başlık
+        Label title = new Label(news.getTitle());
+        title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+        title.setTextFill(TEXT_COLOR);
+
+        // Tarih
+        Label date = new Label(news.getDate());
+        date.setFont(Font.font(FONT_FAMILY, 12));
+        date.setTextFill(TEXT_SECONDARY);
+
+        // İçerik
+        Label content = new Label(news.getContent());
+        content.setFont(Font.font(FONT_FAMILY, 14));
+        content.setTextFill(TEXT_COLOR);
+        content.setWrapText(true);
+
+        // Tür etiketi
+        Label typeLabel = new Label(news.getType().toString());
+        typeLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 12));
+        typeLabel.setTextFill(PRIMARY_COLOR);
+        typeLabel.setStyle("-fx-background-color: #222222; -fx-padding: 5px 10px; -fx-background-radius: 5px;");
+
+        card.getChildren().addAll(title, date, content, typeLabel);
+
+        // Hover effect
+        card.setOnMouseEntered(e -> {
+            card.setStyle(
+                    "-fx-background-color: #222222;" +
+                            "-fx-background-radius: 10px;" +
+                            "-fx-border-radius: 10px;" +
+                            "-fx-border-color: " + toHexString(PRIMARY_COLOR) + ";" +
+                            "-fx-border-width: 1px;"
+            );
+        });
+
+        card.setOnMouseExited(e -> {
+            card.setStyle(
+                    "-fx-background-color: #1A1A1A;" +
+                            "-fx-background-radius: 10px;" +
+                            "-fx-border-radius: 10px;" +
+                            "-fx-border-color: #333333;" +
+                            "-fx-border-width: 1px;"
+            );
+        });
+
+        return card;
     }
 
     /**
