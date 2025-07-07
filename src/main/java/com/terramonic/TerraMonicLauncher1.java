@@ -87,7 +87,8 @@ public class TerraMonicLauncher1 extends Application {
     private static final String ICON_URL = "https://www.dropbox.com/scl/fi/2yc75kqokrtivw202rt3w/icon.png?rlkey=1blmy791i17gs6t78ecjc3qxf&st=cjc590fc&dl=1";
     
     // Yeni birleşik JSON URL'i - ESKİ 3 AYRI JSON YERİNE TEK JSON
-    private static final String LAUNCHER_JSON_URL = "https://www.dropbox.com/scl/fi/launcher_unified/launcher.json?rlkey=example&st=example&dl=1";
+    // *** TEST İÇİN LOCAL DOSYA KULLANILIYOR - KENDİ URL'İNİZİ BURAYA YAZIN ***
+    private static final String LAUNCHER_JSON_URL = "file:///" + System.getProperty("user.dir").replace("\\", "/") + "/launcher.json";
     
     // Fabric installer
     private static final String FABRIC_INSTALLER_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.3/fabric-installer-1.0.3.jar";
@@ -150,9 +151,6 @@ public class TerraMonicLauncher1 extends Application {
 
         // .terramonic klasörünü kur
         setupTerramonicFolder();
-
-        // YENİ BİRLEŞİK JSON SİSTEMİ - Haberleri config'den yükle
-        loadLauncherConfig();
 
         // Iconu yükle ve ardından başlat
         loadIconAndStart();
@@ -221,10 +219,18 @@ public class TerraMonicLauncher1 extends Application {
                 System.out.println("Launcher ikonu yüklenemedi, varsayılan ikon kullanılacak.");
             }
 
+            // YENİ BİRLEŞİK JSON SİSTEMİ - Önce config'i yükle
+            loadLauncherConfig();
+            
             // Görev çubuğu ve sistem tepsi ikonlarını güncelle
             updateSystemIcons();
             showSplashScreen();
             mainStage.show();
+            
+            // Show'dan sonra icon'u tekrar güncelle (bazı sistemlerde gerekli)
+            Platform.runLater(() -> {
+                updateSystemIcons();
+            });
         });
 
         iconTask.setOnFailed(e -> {
@@ -345,6 +351,30 @@ public class TerraMonicLauncher1 extends Application {
                 // Config ve mods klasörünü temizle
                 clearConfigAndMods();
             }
+            
+            System.out.println("Launcher config yüklendi! Haberler sayısı: " + newsList.size());
+            
+            // Eğer ana ekran açıksa haberleri refresh et
+            Platform.runLater(() -> {
+                try {
+                    if (currentScene != null && currentScene.getRoot() instanceof BorderPane) {
+                        BorderPane root = (BorderPane) currentScene.getRoot();
+                        VBox vbox = (VBox) root.getCenter();
+                        if (vbox != null && vbox.getChildren().size() > 1) {
+                            BorderPane mainContent = (BorderPane) vbox.getChildren().get(1);
+                            StackPane centerPanel = (StackPane) mainContent.getCenter();
+                            if (centerPanel != null) {
+                                // Ana sayfaysa haberleri refresh et
+                                centerPanel.getChildren().clear();
+                                centerPanel.getChildren().add(createNewsPanel());
+                                System.out.println("Haberler refresh edildi!");
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Haber refresh hatası: " + e.getMessage());
+                }
+            });
         });
 
         configTask.setOnFailed(event -> {
@@ -352,11 +382,32 @@ public class TerraMonicLauncher1 extends Application {
             // Fallback haberler
             newsList.clear();
             newsList.add(new NewsItem(
-                    "Hata",
-                    "Launcher ayarları yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+                    "Hata - JSON Yüklenemedi",
+                    "launcher.json dosyası okunamadı. URL'yi kontrol edin veya dosyanın mevcut olduğundan emin olun.",
                     "N/A",
                     NewsItemType.GENEL
             ));
+            
+            // Ana ekranda haber refresh et
+            Platform.runLater(() -> {
+                try {
+                    if (currentScene != null && currentScene.getRoot() instanceof BorderPane) {
+                        BorderPane root = (BorderPane) currentScene.getRoot();
+                        VBox vbox = (VBox) root.getCenter();
+                        if (vbox != null && vbox.getChildren().size() > 1) {
+                            BorderPane mainContent = (BorderPane) vbox.getChildren().get(1);
+                            StackPane centerPanel = (StackPane) mainContent.getCenter();
+                            if (centerPanel != null) {
+                                centerPanel.getChildren().clear();
+                                centerPanel.getChildren().add(createNewsPanel());
+                                System.out.println("Fallback haberler gösterildi!");
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Fallback haber refresh hatası: " + e.getMessage());
+                }
+            });
         });
 
         executorService.submit(configTask);
@@ -2128,20 +2179,27 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     private String readJsonFromUrl(String url) throws IOException {
-        URL jsonUrl = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) jsonUrl.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-        connection.setConnectTimeout(5000);
-        connection.setReadTimeout(5000);
+        if (url.startsWith("file://")) {
+            // Local file için
+            Path filePath = Paths.get(url.substring(7));
+            return Files.readString(filePath);
+        } else {
+            // HTTP/HTTPS URL için
+            URL jsonUrl = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) jsonUrl.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            StringBuilder content = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder content = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line);
+                }
+                return content.toString();
             }
-            return content.toString();
         }
     }
 
@@ -2217,10 +2275,14 @@ public class TerraMonicLauncher1 extends Application {
                 try {
                     taskbar.setIconImage(iconImage);
                     System.out.println("Görev çubuğu ikonu ayarlandı: " + ICON_FILE);
-                } catch (UnsupportedOperationException e) {
+                } catch (UnsupportedOperationException | SecurityException e) {
                     System.out.println("Görev çubuğu ikonu güncellenemedi: " + e.getMessage());
                 }
+            } else {
+                System.out.println("Taskbar ICON_IMAGE özelliği desteklenmiyor.");
             }
+        } else {
+            System.out.println("Taskbar desteklenmiyor.");
         }
 
         // System tray icon

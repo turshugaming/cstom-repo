@@ -21,10 +21,17 @@ Modern, özellik zengin Minecraft launcher'ı Modrinth mod sistemi ve Fabric 1.2
 ### 2. Konfigürasyon
 
 #### A. JSON URL'ini Ayarlayın
-`TerraMonicLauncher1.java` dosyasında bulunan JSON URL'ini kendi sunucunuza göre değiştirin:
+
+**ŞU ANDA LOCAL DOSYA KULLANILIYOR** - Test için proje klasöründeki `launcher.json` dosyası kullanılıyor.
+
+Canlı sunucu için `TerraMonicLauncher1.java` dosyasında 90. satırdaki URL'i değiştirin:
 
 ```java
-private static final String LAUNCHER_JSON_URL = "YOUR_JSON_URL_HERE";
+// Şu anki (test için):
+private static final String LAUNCHER_JSON_URL = "file:///...launcher.json";
+
+// Değiştirin:
+private static final String LAUNCHER_JSON_URL = "https://your-server.com/launcher.json";
 ```
 
 #### B. Icon Dosyasını Ekleyin
