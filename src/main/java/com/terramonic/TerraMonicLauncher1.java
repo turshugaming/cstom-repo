@@ -88,7 +88,7 @@ public class TerraMonicLauncher1 extends Application {
     
     // Yeni birleşik JSON URL'i - ESKİ 3 AYRI JSON YERİNE TEK JSON
     // *** TEST İÇİN LOCAL DOSYA KULLANILIYOR - KENDİ URL'İNİZİ BURAYA YAZIN ***
-    private static final String LAUNCHER_JSON_URL = "file:///" + System.getProperty("user.dir").replace("\\", "/") + "/launcher.json";
+    private static final String LAUNCHER_JSON_URL = "https://www.dropbox.com/scl/fi/zcty3rszkpxritcd6ip85/launcher.json?rlkey=byf0phf8xjy0j6nuuto1qohql&st=rcgtv35f&dl=1";
     
     // Fabric installer
     private static final String FABRIC_INSTALLER_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.3/fabric-installer-1.0.3.jar";
@@ -205,6 +205,18 @@ public class TerraMonicLauncher1 extends Application {
                 if (pngSuccess) {
                     launcherIcon = new Image(ICON_FILE.toUri().toString(), true);
                 }
+
+                // CONFIG'İ SENKRON YÜKLE
+                try {
+                    System.out.println("🔄 (SYNC) JSON yükleniyor: " + LAUNCHER_JSON_URL);
+                    String cfg = readJsonFromUrl(LAUNCHER_JSON_URL);
+                    launcherConfig = new JSONObject(cfg);
+                    System.out.println("✅ (SYNC) JSON yüklendi! Haber sayısı: " + (launcherConfig.has("haberler") ? launcherConfig.getJSONArray("haberler").length() : 0));
+                    // Haberleri hazırla
+                    loadNewsFromConfig();
+                } catch (Exception ex) {
+                    System.out.println("❌ (SYNC) JSON yüklenemedi: " + ex.getMessage());
+                }
                 return null;
             }
         };
@@ -220,7 +232,7 @@ public class TerraMonicLauncher1 extends Application {
             }
 
             // YENİ BİRLEŞİK JSON SİSTEMİ - Önce config'i yükle
-            loadLauncherConfig();
+            // loadLauncherConfig(); // config zaten senkron yüklendi
             
             // Görev çubuğu ve sistem tepsi ikonlarını güncelle
             updateSystemIcons();
