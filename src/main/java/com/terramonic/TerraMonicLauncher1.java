@@ -140,6 +140,9 @@ public class TerraMonicLauncher1 extends Application {
     // Ana merkez panel referansı
     private StackPane centerPanel;
 
+    // Navigasyon seçili indeks
+    private int currentNavIndex = 0;
+
     /**
      * Ana metod
      */
@@ -1557,6 +1560,7 @@ public class TerraMonicLauncher1 extends Application {
 
         // Seçili öğeyi takip etmek için değişken
         final int[] selectedIndex = {0}; // Ana Sayfa varsayılan olarak seçili
+        currentNavIndex = 0;
 
         // LogoBox'u method kapsamında tanımla
         HBox logoBox = null;
@@ -1661,6 +1665,7 @@ public class TerraMonicLauncher1 extends Application {
             navItem.setOnMouseReleased(e -> {
                 // Seçili öğeyi güncelle
                 selectedIndex[0] = index;
+                currentNavIndex = index;
                 updateMenuItemStyles.accept(-1);
 
                 // İçeriği değiştir
@@ -2892,7 +2897,7 @@ public class TerraMonicLauncher1 extends Application {
     private void refreshModPanelUI() {
         if (centerPanel != null) {
             Platform.runLater(() -> {
-                if (centerPanel.lookup("#waitMods") != null) {
+                if (currentNavIndex==1 && centerPanel.lookup("#waitMods") != null) {
                     centerPanel.getChildren().clear();
                     centerPanel.getChildren().add(createModManagementPanel());
                 }
