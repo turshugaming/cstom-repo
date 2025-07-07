@@ -2098,9 +2098,7 @@ public class TerraMonicLauncher1 extends Application {
         bottomPanel.getChildren().addAll(
                 playButton,
                 new VBox(5, downloadProgress, statusLabel),
-                spacer,
-                ramBox,
-                resolutionBox
+                spacer
         );
         return bottomPanel;
     }
@@ -2315,6 +2313,10 @@ public class TerraMonicLauncher1 extends Application {
     private void launchGame() {
         // Basit bir placeholder - tam oyun başlatma sistemi burada olacak
         Platform.runLater(() -> {
+            if(!modsReady.get()){
+                showError("Modlar henüz hazır değil. Lütfen modların indirilmesini bekleyin.");
+                return;
+            }
             downloadProgress.setVisible(true);
             statusLabel.setVisible(true);
             statusLabel.setText("Oyun başlatılıyor...");
