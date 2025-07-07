@@ -1,0 +1,14 @@
+ICON DOSYASI GEREKLİ!
+
+Bu klasöre "icon.png" dosyasını eklemeniz gerekiyor.
+
+Gereksinimler:
+- Dosya adı: icon.png
+- Format: PNG
+- Boyut: 32x32, 64x64 veya 128x128 pixel
+- Şeffaf arka plan (isteğe bağlı)
+- TerraMonic launcher simgesi
+
+Bu dosya olmadan launcher varsayılan Java ikonu kullanacaktır.
+
+Dosya eklendikten sonra bu placeholder dosyasını silebilirsiniz.
