@@ -225,10 +225,10 @@ public class TerraMonicLauncher1 extends Application {
                     System.out.println("❌ (SYNC) JSON yüklenemedi: " + ex.getMessage());
                 }
 
-                // Özel fontu yükle
+                // Gilroy fontu yükle
                 try {
                     Font.loadFont(new URL(GILROY_FONT_URL).openStream(), 12);
-                    System.out.println("✅ Gilroy font yüklendi");
+                    System.out.println("✅ Gilroy Bold font yüklendi");
                 } catch (Exception fe) {
                     System.out.println("⚠️ Font yüklenemedi: " + fe.getMessage());
                 }
@@ -611,6 +611,8 @@ public class TerraMonicLauncher1 extends Application {
         String modrinthUrl = launcherConfig.getString("modrinth_pack");
         System.out.println("✅ Modrinth pack URL bulundu: " + modrinthUrl);
         
+        modsReady.set(false);
+
         Task<Void> modrinthTask = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -1671,7 +1673,21 @@ public class TerraMonicLauncher1 extends Application {
                         centerPanel.getChildren().add(createNewsPanel());
                         break;
                     case "Mod Paketleri":
-                        centerPanel.getChildren().add(createModManagementPanel());
+                        if (modsReady.get()) {
+                            centerPanel.getChildren().add(createModManagementPanel());
+                        } else {
+                            Label waitLbl = new Label("Modlar hazırlanıyor, biraz bekleyin...");
+                            waitLbl.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+                            waitLbl.setTextFill(PRIMARY_COLOR);
+                            centerPanel.getChildren().add(waitLbl);
+
+                            // Dinle
+                            modsReady.addListener((obs, oldV, newV) -> {
+                                if (newV) {
+                                    refreshModPanelUI();
+                                }
+                            });
+                        }
                         break;
                     case "Hesap":
                         centerPanel.getChildren().add(createAccountPanel());
