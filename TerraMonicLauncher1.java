@@ -469,11 +469,21 @@ public class TerraMonicLauncher1 extends Application {
                 try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(nativeJarPath))) {
                     ZipEntry entry;
                     while ((entry = zis.getNextEntry()) != null) {
-                        if (entry.getName().endsWith(".dll")) {
-                            Path dllPath = nativesDir.resolve(entry.getName());
+                        if (entry.getName().endsWith(".dll") && !entry.isDirectory()) {
+                            // Sadece dosya adını al, path bilgisini kaldır
+                            String fileName = Paths.get(entry.getName()).getFileName().toString();
+                            Path dllPath = nativesDir.resolve(fileName);
+                            
                             if (!Files.exists(dllPath)) {
-                                Files.copy(zis, dllPath, StandardCopyOption.REPLACE_EXISTING);
-                                System.out.println("✅ Native DLL çıkarıldı: " + entry.getName());
+                                // Parent klasörleri oluşturmaya gerek yok, sadece dosya adını kullan
+                                try {
+                                    Files.copy(zis, dllPath, StandardCopyOption.REPLACE_EXISTING);
+                                    System.out.println("✅ Native DLL çıkarıldı: " + fileName);
+                                } catch (IOException e) {
+                                    System.out.println("⚠️ DLL çıkarılamadı: " + fileName + " - " + e.getMessage());
+                                }
+                            } else {
+                                System.out.println("✅ DLL zaten mevcut: " + fileName);
                             }
                         }
                         zis.closeEntry();
@@ -482,6 +492,16 @@ public class TerraMonicLauncher1 extends Application {
             } else {
                 System.out.println("⚠️ Native JAR bulunamadı: " + nativeJarPath);
             }
+        }
+        
+        // Natives klasöründeki DLL'leri listele
+        try {
+            long dllCount = Files.list(nativesDir)
+                    .filter(path -> path.toString().endsWith(".dll"))
+                    .count();
+            System.out.println("📂 Toplam " + dllCount + " adet DLL dosyası natives klasöründe");
+        } catch (IOException e) {
+            System.out.println("⚠️ Natives klasörü listelenemedi: " + e.getMessage());
         }
     }
 
