@@ -1679,6 +1679,7 @@ public class TerraMonicLauncher1 extends Application {
                             Label waitLbl = new Label("Modlar hazırlanıyor, biraz bekleyin...");
                             waitLbl.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
                             waitLbl.setTextFill(PRIMARY_COLOR);
+                            waitLbl.setId("waitMods");
                             centerPanel.getChildren().add(waitLbl);
 
                             // Dinle
@@ -2048,32 +2049,51 @@ public class TerraMonicLauncher1 extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // RAM ve Çözünürlük kutuları geri eklendi
-        Label ramLabel = new Label("RAM:");
+        // Sistemden maksimum RAM ve çözünürlüğü belirle
+        long totalMem = ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();
+        long gb = 1024L*1024L*1024L;
+        long maxRamGb = Math.max(2, Math.min(16, totalMem / gb / 2)); // yarısını kullan, 16GB üst sınır
+
+        List<String> ramOptionsDyn = new ArrayList<>();
+        for (int g=2; g<=maxRamGb; g+= (g>=8?4:2)) {
+            ramOptionsDyn.add(g+" GB");
+        }
+
+        Label ramLabel = new Label("RAM Miktarı:");
         ramLabel.setFont(Font.font(FONT_FAMILY, 14));
         ramLabel.setTextFill(TEXT_COLOR);
 
-        ComboBox<String> ramComboBox = new ComboBox<>();
-        List<String> ramOptions = Arrays.asList("2 GB", "4 GB", "6 GB", "8 GB", "12 GB", "16 GB");
-        ramComboBox.getItems().addAll(ramOptions);
-        ramComboBox.getSelectionModel().select(1);
+        ComboBox<String> ramCombo = new ComboBox<>();
+        ramCombo.getItems().addAll(ramOptionsDyn);
+        ramCombo.getSelectionModel().select(Math.min(1, ramOptionsDyn.size()-1));
 
-        Label resolutionLabel = new Label("Çözünürlük:");
-        resolutionLabel.setFont(Font.font(FONT_FAMILY, 14));
-        resolutionLabel.setTextFill(TEXT_COLOR);
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        int scrW = (int) screenBounds.getWidth();
+        int scrH = (int) screenBounds.getHeight();
 
-        ComboBox<String> resolutionComboBox = new ComboBox<>();
-        List<String> resolutionOptions = Arrays.asList("1280x720", "1920x1080", "2560x1440", "3840x2160");
-        resolutionComboBox.getItems().addAll(resolutionOptions);
-        resolutionComboBox.getSelectionModel().select(1);
+        List<String> resList = Arrays.asList("1280x720","1600x900","1920x1080","2560x1440","3840x2160");
+        List<String> availableRes = new ArrayList<>();
+        for(String r: resList){
+            String[] sp=r.split("x");
+            int w=Integer.parseInt(sp[0]);int h=Integer.parseInt(sp[1]);
+            if(w<=scrW && h<=scrH) availableRes.add(r);
+        }
+
+        Label resLabel = new Label("Çözünürlük:");
+        resLabel.setFont(Font.font(FONT_FAMILY, 14));
+        resLabel.setTextFill(TEXT_COLOR);
+
+        ComboBox<String> resCombo = new ComboBox<>();
+        resCombo.getItems().addAll(availableRes);
+        resCombo.getSelectionModel().select(Math.max(0,availableRes.size()-1));
 
         HBox ramBox = new HBox(5);
         ramBox.setAlignment(Pos.CENTER_LEFT);
-        ramBox.getChildren().addAll(ramLabel, ramComboBox);
+        ramBox.getChildren().addAll(ramLabel, ramCombo);
 
         HBox resolutionBox = new HBox(5);
         resolutionBox.setAlignment(Pos.CENTER_LEFT);
-        resolutionBox.getChildren().addAll(resolutionLabel, resolutionComboBox);
+        resolutionBox.getChildren().addAll(resLabel, resCombo);
 
         bottomPanel.getChildren().addAll(
                 playButton,
@@ -2869,8 +2889,10 @@ public class TerraMonicLauncher1 extends Application {
     private void refreshModPanelUI() {
         if (centerPanel != null) {
             Platform.runLater(() -> {
-                centerPanel.getChildren().clear();
-                centerPanel.getChildren().add(createModManagementPanel());
+                if (centerPanel.lookup("#waitMods") != null) {
+                    centerPanel.getChildren().clear();
+                    centerPanel.getChildren().add(createModManagementPanel());
+                }
             });
         }
     }
