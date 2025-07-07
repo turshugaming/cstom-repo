@@ -118,9 +118,16 @@ public class TerraMonicLauncher1 extends Application {
     private ImageView userAvatar;
     private ExecutorService executorService;
 
-    // YENİ: OYUN BAŞLATMA İÇİN GEREKLI UI ELEMANLARI
+    // YENİ: OYUN BAŞLATMA İÇİN GEREKLI UI ELEMANLARI - AYARLAR SEKMESİNDE OLACAK
     private ComboBox<String> ramCombo;
     private ComboBox<String> resCombo;
+    
+    // YENİ: MOD KONTROL SİSTEMİ
+    private static final Path DELETED_MODS_FILE = TERRAMONIC_PATH.resolve("deleted_mods.json");
+    private static final Path MOD_INTEGRITY_FILE = TERRAMONIC_PATH.resolve("mod_integrity.json");
+    
+    // YENİ: UI DISABLE SISTEMI
+    private boolean gameIsLaunching = false;
 
     // Stage ve scene referansları
     private Stage mainStage;
@@ -359,7 +366,7 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * YENİ: GERÇEK OYUN BAŞLATMA METODU
+     * YENİ: GERÇEK OYUN BAŞLATMA METODU - KnotClient ile
      */
     private void launchGame() {
         Platform.runLater(() -> {
@@ -373,17 +380,24 @@ public class TerraMonicLauncher1 extends Application {
                 return;
             }
             
+            // YENİ: UI'yi disable et
+            gameIsLaunching = true;
+            
             downloadProgress.setVisible(true);
             statusLabel.setVisible(true);
-            statusLabel.setText("Oyun başlatılıyor...");
+            statusLabel.setText("🚀 Oyun başlatılıyor...");
+            statusLabel.setTextFill(PRIMARY_COLOR);
             playButton.setDisable(true);
             
             Task<Void> launchTask = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
-                    // Seçilen RAM ve çözünürlük değerlerini al
-                    String selectedRam = ramCombo.getSelectionModel().getSelectedItem();
-                    String selectedRes = resCombo.getSelectionModel().getSelectedItem();
+                    // Seçilen RAM ve çözünürlük değerlerini al (ayarlar sekmesinden)
+                    String selectedRam = ramCombo != null ? ramCombo.getSelectionModel().getSelectedItem() : "4 GB";
+                    String selectedRes = resCombo != null ? resCombo.getSelectionModel().getSelectedItem() : "1280x720";
+                    
+                    if (selectedRam == null) selectedRam = "4 GB";
+                    if (selectedRes == null) selectedRes = "1280x720";
                     
                     // RAM değerini parse et (örn: "8 GB" -> "8G")
                     String ramAmount = selectedRam.replace(" GB", "G");
@@ -439,7 +453,7 @@ public class TerraMonicLauncher1 extends Application {
                     }
                     classpath.append(fabricJarPath.toString());
                     
-                    // Java command oluştur
+                    // YENİ: KnotClient ile Java command oluştur
                     List<String> command = new ArrayList<>();
                     command.add("java");
                     command.add("-Xmx" + ramAmount);
@@ -447,7 +461,7 @@ public class TerraMonicLauncher1 extends Application {
                     command.add("-Djava.library.path=" + TERRAMONIC_PATH.resolve("natives").toString());
                     command.add("-cp");
                     command.add(classpath.toString());
-                    command.add("net.minecraft.client.main.Main");
+                    command.add("net.fabricmc.loader.impl.launch.knot.KnotClient"); // YENİ: KnotClient
                     command.add("--username");
                     command.add(playerName);
                     command.add("--version");
@@ -463,7 +477,7 @@ public class TerraMonicLauncher1 extends Application {
                     command.add("--height");
                     command.add(height);
                     
-                    Platform.runLater(() -> statusLabel.setText("Minecraft başlatılıyor..."));
+                    Platform.runLater(() -> statusLabel.setText("🎮 Minecraft başlatılıyor..."));
                     
                     // Process'i başlat
                     ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -475,13 +489,17 @@ public class TerraMonicLauncher1 extends Application {
                     System.out.println("🚀 Minecraft başlatıldı!");
                     System.out.println("📋 Komut: " + String.join(" ", command));
                     
-                    // Process output'unu oku (opsiyonel)
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            System.out.println("Minecraft: " + line);
+                    // Process output'unu oku (opsiyonel - arkaplanda)
+                    executorService.submit(() -> {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                System.out.println("Minecraft: " + line);
+                            }
+                        } catch (IOException e) {
+                            System.out.println("Process output okuma hatası: " + e.getMessage());
                         }
-                    }
+                    });
                     
                     return null;
                 }
@@ -489,10 +507,17 @@ public class TerraMonicLauncher1 extends Application {
             
             launchTask.setOnSucceeded(e -> {
                 Platform.runLater(() -> {
+                    gameIsLaunching = false; // YENİ: UI'yi tekrar enable et
                     downloadProgress.setVisible(false);
-                    statusLabel.setVisible(false);
+                    statusLabel.setText("✅ Minecraft başarıyla başlatıldı!");
+                    statusLabel.setTextFill(PRIMARY_COLOR);
                     playButton.setDisable(false);
-                    showInfo("Minecraft başarıyla başlatıldı!");
+                    
+                    // 3 saniye sonra status'u gizle
+                    Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
+                        statusLabel.setVisible(false);
+                    }));
+                    timeline.play();
                 });
             });
             
@@ -501,10 +526,10 @@ public class TerraMonicLauncher1 extends Application {
                 System.out.println("❌ Oyun başlatma hatası: " + exception.getMessage());
                 exception.printStackTrace();
                 Platform.runLater(() -> {
+                    gameIsLaunching = false; // YENİ: UI'yi tekrar enable et
                     downloadProgress.setVisible(false);
-                    statusLabel.setVisible(false);
                     playButton.setDisable(false);
-                    showError("Oyun başlatılamadı:\n\n" + exception.getMessage());
+                    showError("Oyun başlatılamadı: " + exception.getMessage());
                 });
             });
             
@@ -727,7 +752,145 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * Modrinth mod paketini indirir ve yükler
+     * YENİ: MOD KONTROL SİSTEMİ
+     */
+    private void checkAndRepairMods() {
+        Task<Void> repairTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(() -> statusLabel.setText("Modlar kontrol ediliyor..."));
+                
+                if (launcherConfig != null && launcherConfig.has("modrinth_pack")) {
+                    // Silinmiş modları kontrol et
+                    Set<String> deletedMods = loadDeletedModsList();
+                    
+                    // Modrinth pack'i tekrar kontrol et
+                    String modrinthUrl = launcherConfig.getString("modrinth_pack");
+                    Path mrpackPath = Files.createTempFile("terramonic_pack_check", ".mrpack");
+                    downloadFile(modrinthUrl, mrpackPath);
+                    
+                    Path tempExtractDir = Files.createTempDirectory("terramonic_extract_check");
+                    extractZip(mrpackPath, tempExtractDir);
+                    
+                    Path indexPath = tempExtractDir.resolve("modrinth.index.json");
+                    String indexContent = Files.readString(indexPath);
+                    JSONObject indexJson = new JSONObject(indexContent);
+                    
+                    JSONArray files = indexJson.getJSONArray("files");
+                    Path modsDir = TERRAMONIC_PATH.resolve("mods");
+                    
+                    int repairedCount = 0;
+                    for (int i = 0; i < files.length(); i++) {
+                        JSONObject fileObj = files.getJSONObject(i);
+                        String filePath = fileObj.getString("path");
+                        
+                        if (filePath.startsWith("mods/")) {
+                            String fileName = Paths.get(filePath).getFileName().toString();
+                            
+                            // Eğer mod launcher'dan silinmediyse ve eksikse, tekrar indir
+                            if (!deletedMods.contains(fileName)) {
+                                Path targetPath = modsDir.resolve(fileName);
+                                if (!Files.exists(targetPath)) {
+                                    JSONArray downloads = fileObj.getJSONArray("downloads");
+                                    if (downloads.length() > 0) {
+                                        String downloadUrl = downloads.getString(0);
+                                        Platform.runLater(() -> statusLabel.setText("Eksik mod indiriliyor: " + fileName));
+                                        downloadFile(downloadUrl, targetPath);
+                                        repairedCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Temizlik
+                    deleteDirectory(tempExtractDir);
+                    Files.deleteIfExists(mrpackPath);
+                    
+                    final int finalCount = repairedCount;
+                    Platform.runLater(() -> {
+                        if (finalCount > 0) {
+                            showInfo("Mod kontrolü tamamlandı! " + finalCount + " mod onarıldı.");
+                        } else {
+                            showInfo("Mod kontrolü tamamlandı! Tüm modlar mevcut.");
+                        }
+                    });
+                }
+                return null;
+            }
+        };
+        
+        repairTask.setOnFailed(event -> {
+            Platform.runLater(() -> showError("Mod kontrolü başarısız: " + event.getSource().getException().getMessage()));
+        });
+        
+        executorService.submit(repairTask);
+    }
+    
+    private void clearLauncherCache() {
+        Task<Void> clearTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(() -> statusLabel.setText("Cache temizleniyor..."));
+                
+                // Geçici dosyaları temizle
+                try {
+                    Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+                    Files.list(tempDir)
+                            .filter(path -> path.getFileName().toString().startsWith("terramonic"))
+                            .forEach(path -> {
+                                try {
+                                    if (Files.isDirectory(path)) {
+                                        deleteDirectory(path);
+                                    } else {
+                                        Files.deleteIfExists(path);
+                                    }
+                                } catch (IOException e) {
+                                    System.out.println("Geçici dosya silinemedi: " + path);
+                                }
+                            });
+                } catch (IOException e) {
+                    System.out.println("Temp klasörü temizlenemedi: " + e.getMessage());
+                }
+                
+                Platform.runLater(() -> showInfo("Cache başarıyla temizlendi!"));
+                return null;
+            }
+        };
+        
+        executorService.submit(clearTask);
+    }
+    
+    private Set<String> loadDeletedModsList() {
+        Set<String> deletedMods = new HashSet<>();
+        try {
+            if (Files.exists(DELETED_MODS_FILE)) {
+                String content = Files.readString(DELETED_MODS_FILE);
+                JSONArray deletedArray = new JSONArray(content);
+                for (int i = 0; i < deletedArray.length(); i++) {
+                    deletedMods.add(deletedArray.getString(i));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Silinmiş modlar listesi yüklenemedi: " + e.getMessage());
+        }
+        return deletedMods;
+    }
+    
+    private void saveDeletedModsList(Set<String> deletedMods) {
+        try {
+            JSONArray deletedArray = new JSONArray();
+            for (String mod : deletedMods) {
+                deletedArray.put(mod);
+            }
+            Files.writeString(DELETED_MODS_FILE, deletedArray.toString());
+        } catch (Exception e) {
+            System.out.println("Silinmiş modlar listesi kaydedilemedi: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Modrinth mod paketini indirir ve yükler - YENİ: AKILLI KONTROL SİSTEMİ
      */
     private void downloadAndInstallModrinthPack() {
         System.out.println("🔄 Modrinth pack kontrolü başlıyor...");
@@ -752,6 +915,28 @@ public class TerraMonicLauncher1 extends Application {
         String modrinthUrl = launcherConfig.getString("modrinth_pack");
         System.out.println("✅ Modrinth pack URL bulundu: " + modrinthUrl);
 
+        // YENİ: MOD KONTROLÜ - MEVCUT MODLARI KONTROL ET
+        Path modsDir = TERRAMONIC_PATH.resolve("mods");
+        boolean hasExistingMods = false;
+        try {
+            if (Files.exists(modsDir)) {
+                long modCount = Files.list(modsDir)
+                        .filter(path -> path.toString().endsWith(".jar"))
+                        .count();
+                hasExistingMods = modCount > 0;
+                System.out.println("📦 Mevcut mod sayısı: " + modCount);
+            }
+        } catch (IOException e) {
+            System.out.println("⚠️ Mod klasörü kontrol edilemedi: " + e.getMessage());
+        }
+
+        if (hasExistingMods) {
+            System.out.println("✅ Modlar zaten mevcut, indirme atlanıyor.");
+            modsReady.set(true);
+            refreshModPanelUI();
+            return;
+        }
+
         modsReady.set(false);
 
         Task<Void> modrinthTask = new Task<>() {
@@ -760,7 +945,10 @@ public class TerraMonicLauncher1 extends Application {
                 String modrinthUrl = launcherConfig.getString("modrinth_pack");
                 System.out.println("🚀 Modrinth task başlıyor...");
                 System.out.println("📥 İndirilecek URL: " + modrinthUrl);
-                Platform.runLater(() -> statusLabel.setText("Modrinth pack indiriliyor..."));
+                Platform.runLater(() -> {
+                    statusLabel.setText("📦 Modlar indiriliyor...");
+                    statusLabel.setTextFill(PRIMARY_COLOR);
+                });
 
                 // .mrpack dosyasını indir (temp dizin)
                 Path mrpackPath = Files.createTempFile("terramonic_pack", ".mrpack");
@@ -768,7 +956,10 @@ public class TerraMonicLauncher1 extends Application {
                 downloadFile(modrinthUrl, mrpackPath);
                 System.out.println("✅ Mrpack dosyası indirildi!");
 
-                Platform.runLater(() -> statusLabel.setText("Modrinth pack çıkarılıyor..."));
+                Platform.runLater(() -> {
+                    statusLabel.setText("📂 Mod paketi çıkarılıyor...");
+                    statusLabel.setTextFill(PRIMARY_COLOR);
+                });
 
                 // .mrpack dosyasını çıkar (ZIP formatı)
                 Path tempExtractDir = Files.createTempDirectory("terramonic_extract");
@@ -800,7 +991,10 @@ public class TerraMonicLauncher1 extends Application {
                 JSONObject indexJson = new JSONObject(indexContent);
                 System.out.println("✅ Index JSON parse edildi!");
 
-                Platform.runLater(() -> statusLabel.setText("Modlar indiriliyor..."));
+                Platform.runLater(() -> {
+                    statusLabel.setText("⬬ Mod dosyaları indiriliyor...");
+                    statusLabel.setTextFill(PRIMARY_COLOR);
+                });
 
                 // Mods klasörünü temizle
                 Path modsDir = TERRAMONIC_PATH.resolve("mods");
@@ -828,7 +1022,10 @@ public class TerraMonicLauncher1 extends Application {
                             String fileName = Paths.get(filePath).getFileName().toString();
                             Path targetPath = modsDir.resolve(fileName);
 
-                            Platform.runLater(() -> statusLabel.setText("İndiriliyor: " + fileName));
+                            Platform.runLater(() -> {
+                                statusLabel.setText("📥 İndiriliyor: " + fileName);
+                                statusLabel.setTextFill(PRIMARY_COLOR);
+                            });
                             System.out.println("📥 [" + modCount + "] İndiriliyor: " + fileName);
                             downloadFile(downloadUrl, targetPath);
                             System.out.println("✅ [" + modCount + "] İndirildi: " + fileName);
@@ -849,7 +1046,10 @@ public class TerraMonicLauncher1 extends Application {
                 modsReady.set(true);
                 refreshModPanelUI();
 
-                Platform.runLater(() -> statusLabel.setText("Modrinth pack kurulumu tamamlandı!"));
+                Platform.runLater(() -> {
+                    statusLabel.setText("✅ Modlar başarıyla yüklendi!");
+                    statusLabel.setTextFill(PRIMARY_COLOR);
+                });
                 System.out.println("🎊 Modrinth pack kurulumu başarıyla tamamlandı!");
 
                 return null;
@@ -1816,7 +2016,7 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * Alt paneli (oyun başlatma kontrolleri) oluşturur - YENİ: GERÇEK RAM VE ÇÖZÜNüRLüK SEÇİMİ
+     * Alt paneli (oyun başlatma kontrolleri) oluşturur - YENİ: SADECE OYUN BAŞLAT BUTONU
      */
     private HBox createBottomPanel() {
         HBox bottomPanel = new HBox();
@@ -1834,14 +2034,12 @@ public class TerraMonicLauncher1 extends Application {
 
         addSystemTrayIcon();
 
-        playButton = createStyledButton("OYUNU BAŞLAT", 200, 30);
+        playButton = createStyledButton("OYUNU BAŞLAT", 200, 40);
         playButton.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
         playButton.setAlignment(Pos.CENTER);
-        playButton.setTranslateX(-15); // 2px sağa kaydır
-        playButton.setTranslateY(0);
 
         downloadProgress = new ProgressBar(0);
-        downloadProgress.setPrefWidth(150);
+        downloadProgress.setPrefWidth(200);
         downloadProgress.setStyle("-fx-accent: " + toHexString(PRIMARY_COLOR) + ";");
         downloadProgress.setVisible(false);
 
@@ -1854,61 +2052,25 @@ public class TerraMonicLauncher1 extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Sistemden maksimum RAM ve çözünürlüğü belirle
-        long totalMem = ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();
-        long gb = 1024L * 1024L * 1024L;
-        long maxRamGb = Math.max(2, Math.min(16, totalMem / gb / 2)); // Yarısını kullan, 16GB üst sınır
-
-        List<String> ramOptionsDyn = new ArrayList<>();
-        for (int g = 2; g <= maxRamGb; g += (g >= 8 ? 4 : 2)) {
-            ramOptionsDyn.add(g + " GB");
-        }
-
-        Label ramLabel = new Label("RAM Miktarı:");
-        ramLabel.setFont(Font.font(FONT_FAMILY, 14));
-        ramLabel.setTextFill(TEXT_COLOR);
-
-        ramCombo = new ComboBox<>();
-        ramCombo.getItems().addAll(ramOptionsDyn);
-        ramCombo.getSelectionModel().select(Math.min(1, ramOptionsDyn.size() - 1));
-        ramCombo.setPrefWidth(100); // Sabit genişlik
-
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        int scrW = (int) screenBounds.getWidth();
-        int scrH = (int) screenBounds.getHeight();
-
-        List<String> resList = Arrays.asList("1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160");
-        List<String> availableRes = new ArrayList<>();
-        for (String r : resList) {
-            String[] sp = r.split("x");
-            int w = Integer.parseInt(sp[0]);
-            int h = Integer.parseInt(sp[1]);
-            if (w <= scrW && h <= scrH) availableRes.add(r);
-        }
-
-        Label resLabel = new Label("Çözünürlük:");
-        resLabel.setFont(Font.font(FONT_FAMILY, 14));
-        resLabel.setTextFill(TEXT_COLOR);
-
-        resCombo = new ComboBox<>();
-        resCombo.getItems().addAll(availableRes);
-        resCombo.getSelectionModel().select(Math.max(0, availableRes.size() - 1));
-        resCombo.setPrefWidth(120); // Sabit genişlik
-
-        HBox ramBox = new HBox(5);
-        ramBox.setAlignment(Pos.CENTER_LEFT);
-        ramBox.getChildren().addAll(ramLabel, ramCombo);
-
-        HBox resolutionBox = new HBox(5);
-        resolutionBox.setAlignment(Pos.CENTER_LEFT);
-        resolutionBox.getChildren().addAll(resLabel, resCombo);
+        // YENİ: OYUN VERSİYON BİLGİSİ
+        VBox versionInfo = new VBox(5);
+        versionInfo.setAlignment(Pos.CENTER_RIGHT);
+        
+        Label mcVersion = new Label("Minecraft " + MINECRAFT_VERSION);
+        mcVersion.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 12));
+        mcVersion.setTextFill(PRIMARY_COLOR);
+        
+        Label fabricVersion = new Label("Fabric " + FABRIC_VERSION);
+        fabricVersion.setFont(Font.font(FONT_FAMILY, 12));
+        fabricVersion.setTextFill(TEXT_SECONDARY);
+        
+        versionInfo.getChildren().addAll(mcVersion, fabricVersion);
 
         bottomPanel.getChildren().addAll(
                 playButton,
                 new VBox(5, downloadProgress, statusLabel),
                 spacer,
-                ramBox,
-                resolutionBox
+                versionInfo
         );
 
         return bottomPanel;
@@ -1919,7 +2081,7 @@ public class TerraMonicLauncher1 extends Application {
         VBox newsContainer = new VBox(20);
         newsContainer.setPadding(new Insets(20));
 
-        Label newsTitle = new Label("HABERLER & DUYURULAR");
+        Label newsTitle = new Label("📰 HABERLER & DUYURULAR");
         newsTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
         newsTitle.setTextFill(PRIMARY_COLOR);
 
@@ -1985,9 +2147,18 @@ public class TerraMonicLauncher1 extends Application {
 
         Button resetModButton = createStyledButton("MODLARI SIFIRLA", 150, 40);
         resetModButton.setOnAction(e -> {
+            if (gameIsLaunching) {
+                showError("Oyun başlatılırken modlar sıfırlanamaz!");
+                return;
+            }
+            
             try {
                 deleteDirectory(TERRAMONIC_PATH.resolve("mods"));
                 Files.createDirectories(TERRAMONIC_PATH.resolve("mods"));
+                
+                // YENİ: SİLİNMİŞ MODLAR LİSTESİNİ TEMİZLE
+                Files.deleteIfExists(DELETED_MODS_FILE);
+                
                 loadMods(modListView);
                 showInfo("Modlar sıfırlandı!");
             } catch (IOException ex) {
@@ -1997,9 +2168,19 @@ public class TerraMonicLauncher1 extends Application {
 
         Button removeModButton = createStyledButton("MOD KALDIR", 150, 40);
         removeModButton.setOnAction(e -> {
+            if (gameIsLaunching) {
+                showError("Oyun başlatılırken mod kaldırılamaz!");
+                return;
+            }
+            
             String selectedMod = modListView.getSelectionModel().getSelectedItem();
             if (selectedMod != null) {
                 try {
+                    // YENİ: MODİ SİLİNMİŞ OLARAK İŞARETLE
+                    Set<String> deletedMods = loadDeletedModsList();
+                    deletedMods.add(selectedMod);
+                    saveDeletedModsList(deletedMods);
+                    
                     Files.deleteIfExists(TERRAMONIC_PATH.resolve("mods").resolve(selectedMod));
                     modListView.getItems().remove(selectedMod);
                     showInfo("Mod kaldırıldı: " + selectedMod);
@@ -2014,6 +2195,11 @@ public class TerraMonicLauncher1 extends Application {
         TextField profileNameField = createStyledTextField("Profil adı girin");
         Button saveProfileButton = createStyledButton("PROFİLİ KAYDET", 150, 40);
         saveProfileButton.setOnAction(e -> {
+            if (gameIsLaunching) {
+                showError("Oyun başlatılırken profil kaydedilemez!");
+                return;
+            }
+            
             String profileName = profileNameField.getText().trim();
             if (profileName.isEmpty()) {
                 shakeNode(profileNameField);
@@ -2035,6 +2221,11 @@ public class TerraMonicLauncher1 extends Application {
 
         Button loadProfileButton = createStyledButton("PROFİLİ YÜKLE", 150, 40);
         loadProfileButton.setOnAction(e -> {
+            if (gameIsLaunching) {
+                showError("Oyun başlatılırken profil yüklenemez!");
+                return;
+            }
+            
             String selectedProfile = profileComboBox.getSelectionModel().getSelectedItem();
             if (selectedProfile != null) {
                 loadModProfile(selectedProfile);
@@ -2076,6 +2267,11 @@ public class TerraMonicLauncher1 extends Application {
 
         Button logoutButton = createStyledButton("ÇIKIŞ YAP", 150, 40);
         logoutButton.setOnAction(e -> {
+            if (gameIsLaunching) {
+                showError("Oyun başlatılırken çıkış yapılamaz!");
+                return;
+            }
+            
             playerName = "";
             showLoginScreen();
         });
@@ -2093,11 +2289,108 @@ public class TerraMonicLauncher1 extends Application {
         title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
         title.setTextFill(PRIMARY_COLOR);
 
-        Label placeholder = new Label("Ayarlar bölümü geliştirme aşamasında.");
-        placeholder.setFont(Font.font(FONT_FAMILY, 16));
-        placeholder.setTextFill(TEXT_COLOR);
+        // YENİ: OYUN AYARLARI BÖLÜMÜ
+        Label gameSettingsTitle = new Label("Oyun Ayarları");
+        gameSettingsTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+        gameSettingsTitle.setTextFill(TEXT_COLOR);
 
-        settingsPanel.getChildren().addAll(title, new Separator(), placeholder);
+        // RAM AYARI
+        Label ramLabel = new Label("RAM Miktarı:");
+        ramLabel.setFont(Font.font(FONT_FAMILY, 14));
+        ramLabel.setTextFill(TEXT_COLOR);
+
+        // Sistem RAM'ini kontrol et
+        long totalMem = ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();
+        long gb = 1024L * 1024L * 1024L;
+        long maxRamGb = Math.max(2, Math.min(16, totalMem / gb / 2));
+
+        List<String> ramOptionsDyn = new ArrayList<>();
+        for (int g = 2; g <= maxRamGb; g += (g >= 8 ? 4 : 2)) {
+            ramOptionsDyn.add(g + " GB");
+        }
+
+        ramCombo = new ComboBox<>();
+        ramCombo.getItems().addAll(ramOptionsDyn);
+        ramCombo.getSelectionModel().select(Math.min(1, ramOptionsDyn.size() - 1));
+        ramCombo.setPrefWidth(150);
+        ramCombo.setStyle(
+                "-fx-background-color: #222222;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-prompt-text-fill: white;" +
+                        "-fx-border-color: #333333;"
+        );
+
+        HBox ramBox = new HBox(10);
+        ramBox.setAlignment(Pos.CENTER_LEFT);
+        ramBox.getChildren().addAll(ramLabel, ramCombo);
+
+        // ÇÖZÜNÜRLüK AYARI
+        Label resLabel = new Label("Çözünürlük:");
+        resLabel.setFont(Font.font(FONT_FAMILY, 14));
+        resLabel.setTextFill(TEXT_COLOR);
+
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        int scrW = (int) screenBounds.getWidth();
+        int scrH = (int) screenBounds.getHeight();
+
+        List<String> resList = Arrays.asList("1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160");
+        List<String> availableRes = new ArrayList<>();
+        for (String r : resList) {
+            String[] sp = r.split("x");
+            int w = Integer.parseInt(sp[0]);
+            int h = Integer.parseInt(sp[1]);
+            if (w <= scrW && h <= scrH) availableRes.add(r);
+        }
+
+        resCombo = new ComboBox<>();
+        resCombo.getItems().addAll(availableRes);
+        resCombo.getSelectionModel().select(Math.max(0, availableRes.size() - 1));
+        resCombo.setPrefWidth(150);
+        resCombo.setStyle(
+                "-fx-background-color: #222222;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-prompt-text-fill: white;" +
+                        "-fx-border-color: #333333;"
+        );
+
+        HBox resolutionBox = new HBox(10);
+        resolutionBox.setAlignment(Pos.CENTER_LEFT);
+        resolutionBox.getChildren().addAll(resLabel, resCombo);
+
+        // LAUNCHER AYARLARI
+        Label launcherSettingsTitle = new Label("Launcher Ayarları");
+        launcherSettingsTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+        launcherSettingsTitle.setTextFill(TEXT_COLOR);
+
+        // MOD KONTROLü
+        Button checkModsButton = createStyledButton("MODLARI KONTROL ET", 200, 40);
+        checkModsButton.setOnAction(e -> {
+            if (!gameIsLaunching) {
+                checkAndRepairMods();
+            }
+        });
+
+        // CACHE TEMİZLE
+        Button clearCacheButton = createStyledButton("CACHE TEMİZLE", 200, 40);
+        clearCacheButton.setOnAction(e -> {
+            if (!gameIsLaunching) {
+                clearLauncherCache();
+            }
+        });
+
+        HBox buttonBox = new HBox(15);
+        buttonBox.getChildren().addAll(checkModsButton, clearCacheButton);
+
+        settingsPanel.getChildren().addAll(
+                title,
+                new Separator(),
+                gameSettingsTitle,
+                ramBox,
+                resolutionBox,
+                new Separator(),
+                launcherSettingsTitle,
+                buttonBox
+        );
 
         return settingsPanel;
     }
@@ -2524,23 +2817,36 @@ public class TerraMonicLauncher1 extends Application {
                 (int) (color.getBlue() * 255));
     }
 
+    // YENİ: POPUP YERİNE STATUSLABEL KULLAN
     private void showError(String message) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Hata");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
+            if (statusLabel != null) {
+                statusLabel.setText("❌ " + message);
+                statusLabel.setTextFill(Color.web("#FF3A3A"));
+                statusLabel.setVisible(true);
+                
+                // 5 saniye sonra gizle
+                Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), e -> {
+                    statusLabel.setVisible(false);
+                }));
+                timeline.play();
+            }
         });
     }
 
     private void showInfo(String message) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Bilgi");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
+            if (statusLabel != null) {
+                statusLabel.setText("✅ " + message);
+                statusLabel.setTextFill(PRIMARY_COLOR);
+                statusLabel.setVisible(true);
+                
+                // 3 saniye sonra gizle
+                Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), e -> {
+                    statusLabel.setVisible(false);
+                }));
+                timeline.play();
+            }
         });
     }
 
