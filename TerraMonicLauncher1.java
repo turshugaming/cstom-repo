@@ -253,6 +253,9 @@ public class TerraMonicLauncher1 extends Application {
                 // YENİ: SLF4J kütüphanelerini ekle
                 downloadSLF4JLibraries(librariesDir);
                 
+                // YENİ: LWJGL native DLL'lerini çıkar
+                extractLWJGLNatives(librariesDir);
+                
                 // Library'leri indir
                 JSONArray libraries = versionJson.getJSONArray("libraries");
                 int totalLibs = libraries.length();
@@ -372,7 +375,7 @@ public class TerraMonicLauncher1 extends Application {
      * YENİ: SLF4J KÜTÜPHANELERİNİ İNDİRİR (c2me, badoptimizations vb modlar için)
      */
     private void downloadSLF4JLibraries(Path librariesDir) throws IOException {
-        // SLF4J ve LWJGL kütüphaneleri (modlar için gerekli)
+        // SLF4J, LWJGL ve kritik kütüphaneler (modlar için gerekli)
         String[][] slf4jLibraries = {
             {"org/slf4j", "slf4j-api", "2.0.13"},
             {"org/slf4j", "slf4j-nop", "2.0.13"},
@@ -381,7 +384,20 @@ public class TerraMonicLauncher1 extends Application {
             {"org/lwjgl", "lwjgl-glfw", "3.3.1"},
             {"org/lwjgl", "lwjgl-stb", "3.3.1"},
             {"org/lwjgl", "lwjgl-tinyfd", "3.3.1"},
-            // Ek kütüphaneler
+            // Native DLL'ler için
+            {"org/lwjgl", "lwjgl", "3.3.1", "windows"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.1", "windows"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.1", "windows"},
+            {"org/lwjgl", "lwjgl-stb", "3.3.1", "windows"},
+            {"org/lwjgl", "lwjgl-tinyfd", "3.3.1", "windows"},
+            // Fastutil - modlar için kritik
+            {"it/unimi/dsi", "fastutil", "8.5.13"},
+            // Apache Commons
+            {"org/apache/commons", "commons-lang3", "3.14.0"},
+            {"org/apache/commons", "commons-collections4", "4.4"},
+            // Guava
+            {"com/google/guava", "guava", "32.1.3-jre"},
+            // Log4j
             {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"}
@@ -391,41 +407,80 @@ public class TerraMonicLauncher1 extends Application {
             String groupPath = lib[0];
             String artifactId = lib[1];
             String version = lib[2];
+            String classifier = lib.length > 3 ? lib[3] : null;
             
             // Maven path oluştur
+            String fileName = classifier != null ? 
+                artifactId + "-" + version + "-natives-" + classifier + ".jar" :
+                artifactId + "-" + version + ".jar";
+                
             Path libPath = librariesDir.resolve(groupPath)
                     .resolve(artifactId)
                     .resolve(version)
-                    .resolve(artifactId + "-" + version + ".jar");
+                    .resolve(fileName);
             
             if (!Files.exists(libPath)) {
                 Files.createDirectories(libPath.getParent());
                 
                 // Maven Central URL
                 String downloadUrl = "https://repo1.maven.org/maven2/" + 
-                    groupPath + "/" + artifactId + "/" + version + "/" + 
-                    artifactId + "-" + version + ".jar";
+                    groupPath + "/" + artifactId + "/" + version + "/" + fileName;
                 
                 try {
-                    Platform.runLater(() -> statusLabel.setText("🔧 Gerekli kütüphane indiriliyor: " + artifactId));
+                    Platform.runLater(() -> statusLabel.setText("🔧 Gerekli kütüphane indiriliyor: " + artifactId + 
+                        (classifier != null ? " (natives)" : "")));
                     downloadFile(downloadUrl, libPath);
-                    System.out.println("✅ Gerekli kütüphane indirildi: " + artifactId + "-" + version + ".jar");
+                    System.out.println("✅ Gerekli kütüphane indirildi: " + fileName);
                 } catch (IOException e) {
-                    System.out.println("⚠️ Kütüphane indirilemedi: " + artifactId + " - " + e.getMessage());
+                    System.out.println("⚠️ Kütüphane indirilemedi: " + fileName + " - " + e.getMessage());
                     
                     // Alternatif URL dene (JCenter)
                     try {
                         String alternativeUrl = "https://jcenter.bintray.com/" + 
-                            groupPath + "/" + artifactId + "/" + version + "/" + 
-                            artifactId + "-" + version + ".jar";
+                            groupPath + "/" + artifactId + "/" + version + "/" + fileName;
                         downloadFile(alternativeUrl, libPath);
-                        System.out.println("✅ Alternative URL'den indirildi: " + artifactId);
+                        System.out.println("✅ Alternative URL'den indirildi: " + fileName);
                     } catch (IOException e2) {
-                        System.out.println("❌ Alternative URL de başarısız: " + artifactId + " - " + e2.getMessage());
+                        System.out.println("❌ Alternative URL de başarısız: " + fileName + " - " + e2.getMessage());
                     }
                 }
             } else {
-                System.out.println("✅ SLF4J kütüphanesi zaten mevcut: " + artifactId + "-" + version + ".jar");
+                System.out.println("✅ Kütüphane zaten mevcut: " + fileName);
+            }
+        }
+    }
+
+    /**
+     * YENİ: LWJGL NATIVE DLL'LERİNİ ÇIKARIR
+     */
+    private void extractLWJGLNatives(Path librariesDir) throws IOException {
+        Path nativesDir = TERRAMONIC_PATH.resolve("natives");
+        Files.createDirectories(nativesDir);
+        
+        String[] lwjglModules = {"lwjgl", "lwjgl-opengl", "lwjgl-glfw", "lwjgl-stb", "lwjgl-tinyfd"};
+        
+        for (String module : lwjglModules) {
+            Path nativeJarPath = librariesDir.resolve("org/lwjgl")
+                    .resolve(module)
+                    .resolve("3.3.1")
+                    .resolve(module + "-3.3.1-natives-windows.jar");
+            
+            if (Files.exists(nativeJarPath)) {
+                try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(nativeJarPath))) {
+                    ZipEntry entry;
+                    while ((entry = zis.getNextEntry()) != null) {
+                        if (entry.getName().endsWith(".dll")) {
+                            Path dllPath = nativesDir.resolve(entry.getName());
+                            if (!Files.exists(dllPath)) {
+                                Files.copy(zis, dllPath, StandardCopyOption.REPLACE_EXISTING);
+                                System.out.println("✅ Native DLL çıkarıldı: " + entry.getName());
+                            }
+                        }
+                        zis.closeEntry();
+                    }
+                }
+            } else {
+                System.out.println("⚠️ Native JAR bulunamadı: " + nativeJarPath);
             }
         }
     }
@@ -434,7 +489,7 @@ public class TerraMonicLauncher1 extends Application {
      * YENİ: GEREKLİ KÜTÜPHANELERİ CLASSPATH'E EKLER
      */
     private void addEssentialLibrariesToClasspath(StringBuilder classpath, Path librariesDir) {
-        // SLF4J ve LWJGL kütüphaneleri - modlar için kritik
+        // SLF4J, LWJGL ve kritik kütüphaneler - modlar için
         String[][] essentialLibraries = {
             {"org/slf4j", "slf4j-api", "2.0.13"},
             {"org/slf4j", "slf4j-nop", "2.0.13"},
@@ -443,7 +498,14 @@ public class TerraMonicLauncher1 extends Application {
             {"org/lwjgl", "lwjgl-glfw", "3.3.1"},
             {"org/lwjgl", "lwjgl-stb", "3.3.1"},
             {"org/lwjgl", "lwjgl-tinyfd", "3.3.1"},
-            // Log4j bağlantısı için
+            // Fastutil - modlar için kritik
+            {"it/unimi/dsi", "fastutil", "8.5.13"},
+            // Apache Commons
+            {"org/apache/commons", "commons-lang3", "3.14.0"},
+            {"org/apache/commons", "commons-collections4", "4.4"},
+            // Guava
+            {"com/google/guava", "guava", "32.1.3-jre"},
+            // Log4j
             {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"}
