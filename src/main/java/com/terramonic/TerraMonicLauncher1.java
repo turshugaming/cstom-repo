@@ -2025,14 +2025,17 @@ public class TerraMonicLauncher1 extends Application {
         bottomPanel.setAlignment(Pos.CENTER_LEFT);
         bottomPanel.setSpacing(20);
         bottomPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_COLOR) + ";");
+        bottomPanel.setPrefHeight(60);
+        bottomPanel.setMinHeight(60);
+        bottomPanel.setMaxHeight(60);
 
         addSystemTrayIcon();
 
-        playButton = createStyledButton("OYUNU BAŞLAT", 200, 35);
+        playButton = createStyledButton("OYUNU BAŞLAT", 200, 30);
         playButton.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
         playButton.setAlignment(Pos.CENTER);
         playButton.setTranslateX(-15); // 2px sağa kaydır
-        playButton.setTranslateY(-5);
+        playButton.setTranslateY(0);
 
         downloadProgress = new ProgressBar(0);
         downloadProgress.setPrefWidth(150);
