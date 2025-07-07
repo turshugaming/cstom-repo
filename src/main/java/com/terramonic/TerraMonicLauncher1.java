@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERRORpackage com.terramonic;
+package com.terramonic;
 
 import javafx.animation.*;
 import javafx.application.Application;
@@ -1516,6 +1516,7 @@ public class TerraMonicLauncher1 extends Application {
         centerPanel.setBackground(new Background(new BackgroundFill(
                 BACKGROUND_SECONDARY, CornerRadii.EMPTY, Insets.EMPTY)));
         centerPanel.setPadding(new Insets(20));
+        BorderPane.setVgrow(centerPanel, Priority.ALWAYS);
 
         // Haberler panelini oluştur ve göster
         ScrollPane newsPanel = createNewsPanel();
