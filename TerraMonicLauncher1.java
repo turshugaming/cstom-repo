@@ -372,13 +372,19 @@ public class TerraMonicLauncher1 extends Application {
      * YENİ: SLF4J KÜTÜPHANELERİNİ İNDİRİR (c2me, badoptimizations vb modlar için)
      */
     private void downloadSLF4JLibraries(Path librariesDir) throws IOException {
-        // SLF4J kütüphaneleri
+        // SLF4J ve LWJGL kütüphaneleri (modlar için gerekli)
         String[][] slf4jLibraries = {
             {"org/slf4j", "slf4j-api", "2.0.13"},
             {"org/slf4j", "slf4j-nop", "2.0.13"},
-            {"org/lwjgl", "lwjgl", "3.3.3"},
-            {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
-            {"org/lwjgl", "lwjgl-glfw", "3.3.3"}
+            {"org/lwjgl", "lwjgl", "3.3.1"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.1"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.1"},
+            {"org/lwjgl", "lwjgl-stb", "3.3.1"},
+            {"org/lwjgl", "lwjgl-tinyfd", "3.3.1"},
+            // Ek kütüphaneler
+            {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
+            {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
+            {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"}
         };
         
         for (String[] lib : slf4jLibraries) {
@@ -401,14 +407,66 @@ public class TerraMonicLauncher1 extends Application {
                     artifactId + "-" + version + ".jar";
                 
                 try {
-                    Platform.runLater(() -> statusLabel.setText("SLF4J indiriliyor: " + artifactId));
+                    Platform.runLater(() -> statusLabel.setText("🔧 Gerekli kütüphane indiriliyor: " + artifactId));
                     downloadFile(downloadUrl, libPath);
-                    System.out.println("✅ SLF4J kütüphanesi indirildi: " + artifactId + "-" + version + ".jar");
+                    System.out.println("✅ Gerekli kütüphane indirildi: " + artifactId + "-" + version + ".jar");
                 } catch (IOException e) {
-                    System.out.println("⚠️ SLF4J kütüphanesi indirilemedi: " + artifactId + " - " + e.getMessage());
+                    System.out.println("⚠️ Kütüphane indirilemedi: " + artifactId + " - " + e.getMessage());
+                    
+                    // Alternatif URL dene (JCenter)
+                    try {
+                        String alternativeUrl = "https://jcenter.bintray.com/" + 
+                            groupPath + "/" + artifactId + "/" + version + "/" + 
+                            artifactId + "-" + version + ".jar";
+                        downloadFile(alternativeUrl, libPath);
+                        System.out.println("✅ Alternative URL'den indirildi: " + artifactId);
+                    } catch (IOException e2) {
+                        System.out.println("❌ Alternative URL de başarısız: " + artifactId + " - " + e2.getMessage());
+                    }
                 }
             } else {
                 System.out.println("✅ SLF4J kütüphanesi zaten mevcut: " + artifactId + "-" + version + ".jar");
+            }
+        }
+    }
+
+    /**
+     * YENİ: GEREKLİ KÜTÜPHANELERİ CLASSPATH'E EKLER
+     */
+    private void addEssentialLibrariesToClasspath(StringBuilder classpath, Path librariesDir) {
+        // SLF4J ve LWJGL kütüphaneleri - modlar için kritik
+        String[][] essentialLibraries = {
+            {"org/slf4j", "slf4j-api", "2.0.13"},
+            {"org/slf4j", "slf4j-nop", "2.0.13"},
+            {"org/lwjgl", "lwjgl", "3.3.1"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.1"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.1"},
+            {"org/lwjgl", "lwjgl-stb", "3.3.1"},
+            {"org/lwjgl", "lwjgl-tinyfd", "3.3.1"},
+            // Log4j bağlantısı için
+            {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
+            {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
+            {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"}
+        };
+        
+        for (String[] lib : essentialLibraries) {
+            String groupPath = lib[0];
+            String artifactId = lib[1];
+            String version = lib[2];
+            
+            Path libPath = librariesDir.resolve(groupPath)
+                    .resolve(artifactId)
+                    .resolve(version)
+                    .resolve(artifactId + "-" + version + ".jar");
+            
+            if (Files.exists(libPath)) {
+                if (classpath.length() > 0) {
+                    classpath.append(";");
+                }
+                classpath.append(libPath.toString());
+                System.out.println("✅ Essential library eklendi: " + artifactId);
+            } else {
+                System.out.println("⚠️ Essential library eksik: " + libPath);
             }
         }
     }
@@ -463,6 +521,9 @@ public class TerraMonicLauncher1 extends Application {
                     // Libraries classpath oluştur
                     StringBuilder classpath = new StringBuilder();
                     Path librariesDir = TERRAMONIC_PATH.resolve("libraries");
+                    
+                    // YENİ: İLK ÖNCE SLF4J VE LWJGL KÜTÜPHANELERİNİ EKLE
+                    addEssentialLibrariesToClasspath(classpath, librariesDir);
                     
                     // Fabric JSON'dan library'leri oku
                     Path fabricJsonPath = fabricVersionDir.resolve(fabricVersionName + ".json");
