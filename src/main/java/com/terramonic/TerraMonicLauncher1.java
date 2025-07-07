@@ -76,7 +76,8 @@ public class TerraMonicLauncher1 extends Application {
     private static final Color SHADOW_COLOR = Color.web("71ff61");
 
     // Genel font ayarları
-    private static final String FONT_FAMILY = "Segoe UI";
+    private static final String GILROY_FONT_URL = "https://www.dropbox.com/scl/fi/to4nfmn8047ec1f4vqujv/Gilroy-Bold.otf?rlkey=egesrxgfpx0ppj8cruis7mksp&st=crk2grid&dl=1";
+    private static final String FONT_FAMILY = "Gilroy Bold";
     private static final double BUTTON_RADIUS = 18.0;
 
     // Launcher sabitleri
@@ -132,6 +133,12 @@ public class TerraMonicLauncher1 extends Application {
 
     // Launcher config data - YENİ BİRLEŞİK JSON SİSTEMİ
     private JSONObject launcherConfig;
+
+    // Mod indirimi durumu
+    private final javafx.beans.property.BooleanProperty modsReady = new javafx.beans.property.SimpleBooleanProperty(false);
+
+    // Ana merkez panel referansı
+    private StackPane centerPanel;
 
     /**
      * Ana metod
@@ -217,6 +224,15 @@ public class TerraMonicLauncher1 extends Application {
                 } catch (Exception ex) {
                     System.out.println("❌ (SYNC) JSON yüklenemedi: " + ex.getMessage());
                 }
+
+                // Özel fontu yükle
+                try {
+                    Font.loadFont(new URL(GILROY_FONT_URL).openStream(), 12);
+                    System.out.println("✅ Gilroy font yüklendi");
+                } catch (Exception fe) {
+                    System.out.println("⚠️ Font yüklenemedi: " + fe.getMessage());
+                }
+
                 return null;
             }
         };
@@ -687,6 +703,8 @@ public class TerraMonicLauncher1 extends Application {
                 deleteDirectory(tempExtractDir);
                 Files.deleteIfExists(mrpackPath);
                 System.out.println("✅ Temizlik tamamlandı!");
+                modsReady.set(true);
+                refreshModPanelUI();
                 
                 Platform.runLater(() -> statusLabel.setText("Modrinth pack kurulumu tamamlandı!"));
                 System.out.println("🎊 Modrinth pack kurulumu başarıyla tamamlandı!");
@@ -1493,7 +1511,7 @@ public class TerraMonicLauncher1 extends Application {
         VBox leftNav = createNavigationPanel(root);
 
         // Orta panel - Ana içerik
-        StackPane centerPanel = new StackPane();
+        centerPanel = new StackPane();
         centerPanel.setBackground(new Background(new BackgroundFill(
                 BACKGROUND_SECONDARY, CornerRadii.EMPTY, Insets.EMPTY)));
         centerPanel.setPadding(new Insets(20));
@@ -2038,7 +2056,7 @@ public class TerraMonicLauncher1 extends Application {
         playButton = createStyledButton("OYUNU BAŞLAT", 200, 35);
         playButton.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
         playButton.setAlignment(Pos.CENTER);
-        playButton.setTranslateX(-15);
+        playButton.setTranslateX(-13); // 2px sağa kaydır
         playButton.setTranslateY(-5);
 
         downloadProgress = new ProgressBar(0);
@@ -2182,6 +2200,10 @@ public class TerraMonicLauncher1 extends Application {
         } catch (IOException e) {
             Platform.runLater(() -> showError("Profil kaydedilemedi: " + e.getMessage()));
         }
+
+        // 3 saniye sonra mod panelini yenile
+        Timeline tl = new Timeline(new KeyFrame(Duration.seconds(3), ev -> refreshModPanelUI()));
+        tl.play();
     }
 
     private void addToZip(Path filePath, String entryName, ZipOutputStream zos) throws IOException {
@@ -2838,5 +2860,15 @@ public class TerraMonicLauncher1 extends Application {
                 System.out.println("Kopyalama hatası: " + e.getMessage());
             }
         });
+    }
+
+    // Mod panelini yeniden oluşturur
+    private void refreshModPanelUI() {
+        if (centerPanel != null) {
+            Platform.runLater(() -> {
+                centerPanel.getChildren().clear();
+                centerPanel.getChildren().add(createModManagementPanel());
+            });
+        }
     }
 }
