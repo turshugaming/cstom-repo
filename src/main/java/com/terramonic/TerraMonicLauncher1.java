@@ -1,4 +1,4 @@
-package com.terramonic;
+THIS SHOULD BE A LINTER ERRORpackage com.terramonic;
 
 import javafx.animation.*;
 import javafx.application.Application;
