@@ -84,9 +84,10 @@ public class TerraMonicLauncher1 extends Application {
     private static final String MINECRAFT_VERSION = "1.21.5";
     private static final String FABRIC_VERSION = "0.16.14";
     private static final String TERRAMONIC_URL = "https://www.terramonic.com";
+    private static final String ICON_URL = "https://www.dropbox.com/scl/fi/2yc75kqokrtivw202rt3w/icon.png?rlkey=1blmy791i17gs6t78ecjc3qxf&st=cjc590fc&dl=1";
     
-    // Yeni birleşik JSON URL'i (Bu URL'i kendi sunucunuza/dropbox'ınıza göre değiştirin)
-    private static final String LAUNCHER_JSON_URL = "https://raw.githubusercontent.com/example/terramonic-config/main/launcher.json";
+    // Yeni birleşik JSON URL'i - ESKİ 3 AYRI JSON YERİNE TEK JSON
+    private static final String LAUNCHER_JSON_URL = "https://www.dropbox.com/scl/fi/launcher_unified/launcher.json?rlkey=example&st=example&dl=1";
     
     // Fabric installer
     private static final String FABRIC_INSTALLER_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.3/fabric-installer-1.0.3.jar";
@@ -125,10 +126,10 @@ public class TerraMonicLauncher1 extends Application {
     // .terramonic klasör yolu
     private static final Path MODS_PROFILES_PATH = TERRAMONIC_PATH.resolve("mods_profiles");
     private static final Path ICON_PATH = TERRAMONIC_PATH.resolve("terramonic_icon");
-    private static final Path ICON_FILE = ICON_PATH.resolve("icon.png");
-    private static final Path ICO_FILE = ICON_PATH.resolve("icon.ico");
+    private static final Path ICON_FILE = ICON_PATH.resolve("terramonic_icon.png");
+    private static final Path ICO_FILE = ICON_PATH.resolve("terramonic_icon.ico");
 
-    // Launcher config data
+    // Launcher config data - YENİ BİRLEŞİK JSON SİSTEMİ
     private JSONObject launcherConfig;
 
     /**
@@ -149,6 +150,9 @@ public class TerraMonicLauncher1 extends Application {
 
         // .terramonic klasörünü kur
         setupTerramonicFolder();
+
+        // YENİ BİRLEŞİK JSON SİSTEMİ - Haberleri config'den yükle
+        loadLauncherConfig();
 
         // Iconu yükle ve ardından başlat
         loadIconAndStart();
@@ -172,13 +176,16 @@ public class TerraMonicLauncher1 extends Application {
         try {
             // .terramonic klasörünü oluştur
             Files.createDirectories(TERRAMONIC_PATH);
-            // Gerekli alt klasörler
+            // Gerekli alt klasörler - FABRIC VE MODRİNTH İÇİN GÜNCELLENDİ
             Files.createDirectories(TERRAMONIC_PATH.resolve("mods"));
             Files.createDirectories(TERRAMONIC_PATH.resolve("config"));
             Files.createDirectories(TERRAMONIC_PATH.resolve("versions"));
             Files.createDirectories(TERRAMONIC_PATH.resolve("libraries"));
             Files.createDirectories(TERRAMONIC_PATH.resolve("natives"));
             Files.createDirectories(TERRAMONIC_PATH.resolve("assets"));
+            Files.createDirectories(TERRAMONIC_PATH.resolve("assets/objects"));
+            Files.createDirectories(TERRAMONIC_PATH.resolve("assets/indexes"));
+            Files.createDirectories(TERRAMONIC_PATH.resolve("jar"));
             Files.createDirectories(MODS_PROFILES_PATH);
             Files.createDirectories(ICON_PATH);
         } catch (IOException e) {
@@ -193,24 +200,11 @@ public class TerraMonicLauncher1 extends Application {
         Task<Void> iconTask = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                // Com.terramonic klasöründeki icon.png'i kullan
-                Path iconSource = Paths.get("src/main/resources/com/terramonic/icon.png");
-                boolean iconSuccess = false;
-                
-                if (Files.exists(iconSource)) {
-                    Files.copy(iconSource, ICON_FILE, StandardCopyOption.REPLACE_EXISTING);
-                    iconSuccess = true;
-                } else {
-                    // Alternatif olarak resources'dan yükle
-                    try (InputStream iconStream = getClass().getResourceAsStream("/com/terramonic/icon.png")) {
-                        if (iconStream != null) {
-                            Files.copy(iconStream, ICON_FILE, StandardCopyOption.REPLACE_EXISTING);
-                            iconSuccess = true;
-                        }
-                    }
-                }
+                // ESKİ SİSTEM KORUNDU - PNG'yi indir
+                boolean pngSuccess = downloadIconFile(ICON_URL, ICON_FILE);
 
-                if (iconSuccess) {
+                // PNG yüklenemediyse uygulama ikonu olmadan devam et
+                if (pngSuccess) {
                     launcherIcon = new Image(ICON_FILE.toUri().toString(), true);
                 }
                 return null;
@@ -243,7 +237,91 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * Launcher config'ini yükler (birleşik JSON)
+     * İkon dosyasını indirir ve kaydeder - ESKİ SİSTEM KORUNDU
+     */
+    private boolean downloadIconFile(String url, Path targetPath) {
+        try {
+            // Hedef klasörü oluştur
+            Files.createDirectories(targetPath.getParent());
+
+            // Dosya zaten varsa ve geçerliyse, tekrar indirme
+            if (Files.exists(targetPath)) {
+                try {
+                    BufferedImage testImage = ImageIO.read(targetPath.toFile());
+                    if (testImage != null) {
+                        long fileSize = Files.size(targetPath);
+                        if (fileSize > 1024) {
+                            System.out.println("Mevcut PNG dosyası geçerli: " + targetPath);
+                            return true;
+                        }
+                    }
+                    System.out.println("Mevcut PNG dosyası geçersiz, siliniyor: " + targetPath);
+                    Files.delete(targetPath);
+                } catch (IOException e) {
+                    System.out.println("Mevcut PNG dosyası kontrol edilirken hata: " + e.getMessage());
+                    Files.deleteIfExists(targetPath);
+                }
+            }
+
+            // URL bağlantısını aç
+            URL downloadUrl = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) downloadUrl.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setInstanceFollowRedirects(true);
+
+            // Yanıt kodunu kontrol et
+            int responseCode = connection.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                System.out.println("İndirme başarısız, HTTP kodu: " + responseCode);
+                return false;
+            }
+
+            // Content-Type kontrolü (PNG veya binary kabul et)
+            String contentType = connection.getContentType();
+            if (contentType == null ||
+                    (!contentType.toLowerCase().contains("image/png") &&
+                            !contentType.toLowerCase().contains("application/binary"))) {
+                System.out.println("İndirilen dosya PNG formatında değil, Content-Type: " + contentType);
+                return false;
+            }
+
+            // Dosyayı indir
+            try (InputStream in = connection.getInputStream();
+                 OutputStream out = Files.newOutputStream(targetPath)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            }
+
+            // İndirilen dosyanın geçerliliğini kontrol et
+            try {
+                BufferedImage testImage = ImageIO.read(targetPath.toFile());
+                if (testImage == null) {
+                    System.out.println("İndirilen PNG dosyası geçersiz: " + targetPath);
+                    Files.deleteIfExists(targetPath);
+                    return false;
+                }
+                long fileSize = Files.size(targetPath);
+                System.out.println("PNG dosyası başarıyla indirildi: " + targetPath + ", Boyut: " + fileSize + " bayt");
+                return true;
+            } catch (IOException e) {
+                System.out.println("İndirilen PNG dosyası okunamadı: " + e.getMessage());
+                Files.deleteIfExists(targetPath);
+                return false;
+            }
+        } catch (IOException e) {
+            System.out.println("PNG indirme hatası: URL=" + url + ", Hata=" + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Launcher config'ini yükler (YENİ BİRLEŞİK JSON SİSTEMİ)
      */
     private void loadLauncherConfig() {
         Task<JSONObject> configTask = new Task<>() {
@@ -318,6 +396,68 @@ public class TerraMonicLauncher1 extends Application {
                     NewsItemType.GENEL
             ));
         }
+    }
+
+    /**
+     * ESKİ HABERLERİ YÜKLEME SİSTEMİ - FALLBACK OLARAK KORUNDU
+     */
+    private void initializeNews() {
+        Task<List<NewsItem>> fetchNewsTask = new Task<>() {
+            @Override
+            protected List<NewsItem> call() throws Exception {
+                List<NewsItem> items = new ArrayList<>();
+                try {
+                    // Yeni sistemde config'den yükle
+                    if (launcherConfig != null && launcherConfig.has("haberler")) {
+                        JSONArray newsArray = launcherConfig.getJSONArray("haberler");
+                        for (int i = 0; i < newsArray.length(); i++) {
+                            JSONObject newsObj = newsArray.getJSONObject(i);
+                            String title = newsObj.getString("title");
+                            String content = newsObj.getString("content");
+                            String date = newsObj.getString("date");
+                            String typeStr = newsObj.getString("type");
+
+                            NewsItemType type;
+                            try {
+                                type = NewsItemType.valueOf(typeStr);
+                            } catch (IllegalArgumentException e) {
+                                type = NewsItemType.GENEL;
+                            }
+
+                            items.add(new NewsItem(title, content, date, type));
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Config'den haber yüklenemedi: " + e.getMessage());
+                }
+                return items;
+            }
+        };
+
+        fetchNewsTask.setOnSucceeded(event -> {
+            newsList = fetchNewsTask.getValue();
+            if (newsList.isEmpty()) {
+                newsList.add(new NewsItem(
+                        "Haber Bulunamadı",
+                        "Şu anda gösterilecek haber yok. Daha sonra tekrar kontrol edin.",
+                        "N/A",
+                        NewsItemType.GENEL
+                ));
+            }
+        });
+
+        fetchNewsTask.setOnFailed(event -> {
+            System.out.println("Haberler yüklenemedi: " + event.getSource().getException().getMessage());
+            newsList.clear();
+            newsList.add(new NewsItem(
+                    "Hata",
+                    "Haberler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+                    "N/A",
+                    NewsItemType.GENEL
+            ));
+        });
+
+        executorService.submit(fetchNewsTask);
     }
 
     /**
@@ -611,11 +751,9 @@ public class TerraMonicLauncher1 extends Application {
         glow.setLevel(0.3);
         logoView.setEffect(glow);
 
-        // Launcher config'i yükle
-        loadLauncherConfig();
-
-        // Bakım modu kontrolü
-        if (launcherConfig != null && launcherConfig.optBoolean("bakimmmodu", false)) {
+        // YENİ SİSTEM: Bakım modu kontrolü birleşik JSON'dan
+        try {
+            if (launcherConfig != null && launcherConfig.optBoolean("bakimmmodu", false)) {
             // Maintenance mode screen
             final Label maintenanceMessage = new Label("Şuan Bakım Modundayız.");
             maintenanceMessage.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
@@ -647,6 +785,10 @@ public class TerraMonicLauncher1 extends Application {
             currentScene = maintenanceScene;
 
             return; // Stop further processing
+            }
+        } catch (Exception e) {
+            // JSON okuma hatası durumunda normal splash screen'e devam et
+            System.out.println("Bakım modu kontrolü hatası: " + e.getMessage());
         }
 
         // Normal splash screen logic (if not in maintenance mode)
@@ -703,7 +845,7 @@ public class TerraMonicLauncher1 extends Application {
 
                 Platform.runLater(() -> loadingLabel.setText("Versiyon kontrol ediliyor..."));
 
-                // Config'den versiyon al
+                // YENİ BİRLEŞİK JSON SİSTEMİ + ESKİ SİSTEM KORUNDU
                 if (launcherConfig != null) {
                     final String finalRemoteVersion = launcherConfig.getString("version");
 
@@ -722,6 +864,17 @@ public class TerraMonicLauncher1 extends Application {
                         // Config ve mods klasörünü temizle
                         clearConfigAndMods();
                     }
+                }
+
+                Platform.runLater(() -> loadingLabel.setText("Dosyalar kontrol ediliyor..."));
+
+                // ESKİ SİSTEM KORUNDU - dosyalar.json kullanımı
+                if (launcherConfig != null && launcherConfig.has("dosyalar")) {
+                    String zipUrl = launcherConfig.getString("dosyalar");
+                    
+                    // ZIP dosyasını indir ve .terramonic'e çıkar
+                    Platform.runLater(() -> loadingLabel.setText("Dosyalar indiriliyor ve çıkarılıyor..."));
+                    downloadAndExtractZip(zipUrl, TERRAMONIC_PATH);
                 }
 
                 Platform.runLater(() -> loadingLabel.setText("Fabric kurulumu kontrol ediliyor..."));
@@ -807,6 +960,134 @@ public class TerraMonicLauncher1 extends Application {
         });
 
         executorService.submit(setupTask);
+    }
+
+    /**
+     * ESKİ SİSTEM KORUNDU - Downloads ekdosyalar.zip, nests it in a complex-named ZIP, and extracts it to targetDir
+     */
+    private void downloadAndExtractZip(String zipUrl, Path targetDir) throws IOException {
+        Path ekdosyalarZip = TERRAMONIC_PATH.resolve("ekdosyalar.zip");
+        Path nestedZip = TERRAMONIC_PATH.resolve(generateComplexZipName());
+
+        // Check if the nested ZIP exists and is valid
+        boolean isNestedZipValid = Files.exists(nestedZip) && isValidZip(nestedZip);
+
+        // Download ekdosyalar.zip if it doesn't exist or is invalid
+        if (!Files.exists(ekdosyalarZip) || !isValidZip(ekdosyalarZip)) {
+            Platform.runLater(() -> statusLabel.setText("ekdosyalar.zip indiriliyor..."));
+            try (InputStream in = new URL(zipUrl).openStream();
+                 OutputStream out = Files.newOutputStream(ekdosyalarZip)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            }
+            Platform.runLater(() -> statusLabel.setText("ekdosyalar.zip indirildi!"));
+        }
+
+        // Create nested ZIP if it doesn't exist or is invalid
+        if (!isNestedZipValid) {
+            Files.createDirectories(nestedZip.getParent());
+            try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(nestedZip))) {
+                ZipEntry entry = new ZipEntry("ekdosyalar.zip");
+                zos.putNextEntry(entry);
+                Files.copy(ekdosyalarZip, zos);
+                zos.closeEntry();
+            }
+            Platform.runLater(() -> statusLabel.setText("Nested ZIP oluşturuldu: " + nestedZip.getFileName()));
+        }
+
+        // Check and extract missing files from nested ZIP
+        checkAndExtractMissingFiles(nestedZip, targetDir);
+    }
+
+    /**
+     * ESKİ SİSTEM - Validates if a file is a valid ZIP
+     */
+    private boolean isValidZip(Path zipPath) {
+        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipPath))) {
+            return zis.getNextEntry() != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * ESKİ SİSTEM - Checks for missing files and extracts them from the nested ZIP
+     */
+    private void checkAndExtractMissingFiles(Path nestedZip, Path targetDir) throws IOException {
+        Files.createDirectories(targetDir);
+        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(nestedZip))) {
+            ZipEntry nestedEntry;
+            while ((nestedEntry = zis.getNextEntry()) != null) {
+                if (nestedEntry.getName().equals("ekdosyalar.zip")) {
+                    // Create a temporary file to extract ekdosyalar.zip
+                    Path tempEkdosyalar = Files.createTempFile("temp_ekdosyalar", ".zip");
+                    try (OutputStream out = Files.newOutputStream(tempEkdosyalar)) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = zis.read(buffer)) != -1) {
+                            out.write(buffer, 0, bytesRead);
+                        }
+                    }
+
+                    // Now extract files from ekdosyalar.zip if they are missing
+                    try (ZipInputStream innerZis = new ZipInputStream(Files.newInputStream(tempEkdosyalar))) {
+                        ZipEntry innerEntry;
+                        while ((innerEntry = innerZis.getNextEntry()) != null) {
+                            Path destPath = targetDir.resolve(innerEntry.getName());
+                            if (!Files.exists(destPath)) {
+                                if (innerEntry.isDirectory()) {
+                                    Files.createDirectories(destPath);
+                                } else {
+                                    Files.createDirectories(destPath.getParent());
+                                    // Capture the file name in a local variable
+                                    String fileName = innerEntry.getName();
+                                    Platform.runLater(() -> statusLabel.setText("Dosya çıkarılıyor: " + fileName));
+                                    Files.copy(innerZis, destPath, StandardCopyOption.REPLACE_EXISTING);
+                                }
+                            }
+                            innerZis.closeEntry();
+                        }
+                    }
+                    Files.delete(tempEkdosyalar);
+                }
+                zis.closeEntry();
+            }
+        }
+        Platform.runLater(() -> statusLabel.setText("Dosya kontrolü ve çıkarma tamamlandı!"));
+    }
+
+    /**
+     * ESKİ SİSTEM - Generates a complex ZIP file name with random characters and numbers
+     */
+    private String generateComplexZipName() {
+        StringBuilder complexName = new StringBuilder("TERRAMONIC_");
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+
+        // Helper to add random string segment
+        Consumer<Integer> addRandomSegment = length -> {
+            for (int i = 0; i < length; i++) {
+                complexName.append(characters.charAt(random.nextInt(characters.length())));
+            }
+        };
+
+        // Build the complex name with segments
+        addRandomSegment.accept(10);
+        complexName.append("_LAUNCHER_");
+        addRandomSegment.accept(8);
+        complexName.append("_B0K_");
+        addRandomSegment.accept(12);
+        complexName.append("_ACARSIN_");
+        addRandomSegment.accept(10);
+        complexName.append("_SEN_");
+        addRandomSegment.accept(8);
+        complexName.append("_BU_JARI_");
+        addRandomSegment.accept(10);
+
+        return complexName.toString() + ".zip";
     }
 
     /**
@@ -1030,12 +1311,805 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     /**
-     * Ana ekrana geçiş yapar
+     * Ana ekrana geçiş yapar - ESKİ SİSTEM TAM OLARAK KORUNDU
      */
     private void transitionToMainScreen() {
-        // Basit bir sahne geçişi - daha detaylı UI oluşturulabilir
+        // Ana panel
+        BorderPane root = new BorderPane();
+        root.setBackground(new Background(new BackgroundFill(
+                BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        // Üst çubuk ekle
+        VBox rootWithTitleBar = new VBox();
+        rootWithTitleBar.getChildren().add(createTitleBar());
+
+        // Ana içerik bölümü
+        BorderPane mainContent = new BorderPane();
+
+        // Sol panel - Navigasyon
+        VBox leftNav = createNavigationPanel(root);
+
+        // Orta panel - Ana içerik
+        StackPane centerPanel = new StackPane();
+        centerPanel.setBackground(new Background(new BackgroundFill(
+                BACKGROUND_SECONDARY, CornerRadii.EMPTY, Insets.EMPTY)));
+        centerPanel.setPadding(new Insets(20));
+
+        // Haberler panelini oluştur ve göster
+        ScrollPane newsPanel = createNewsPanel();
+        centerPanel.getChildren().add(newsPanel);
+
+        // Sağ panel - Profil ve ayarlar
+        VBox rightPanel = createProfilePanel();
+
+        // Ana içeriği düzenle
+        mainContent.setLeft(leftNav);
+        mainContent.setCenter(centerPanel);
+        mainContent.setRight(rightPanel);
+
+        // Alt panel - Oyun başlatma kontrolleri
+        HBox bottomPanel = createBottomPanel();
+        mainContent.setBottom(bottomPanel);
+
+        // Ana düzeni ayarla
+        rootWithTitleBar.getChildren().add(mainContent);
+        root.setCenter(rootWithTitleBar);
+
+        // Yeni sahne oluştur ve göster
+        Scene mainScene = new Scene(root, windowWidth, windowHeight);
+        mainScene.setFill(BACKGROUND_COLOR);
+
+        // Sahne geçişi yap
+        transitionToScene(mainScene);
+    }
+
+    /**
+     * Sol navigasyon panelini oluşturur - ESKİ SİSTEM TAM KORUNDU
+     */
+    private VBox createNavigationPanel(BorderPane root) {
+        VBox navPanel = new VBox(10);
+        navPanel.setPadding(new Insets(20, 15, 20, 15));
+        navPanel.setPrefWidth(200);
+        navPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_COLOR) + ";");
+
+        // Navigasyon öğeleri
+        String[] navItems = {"Ana Sayfa", "Mod Paketleri", "Hesap", "Ayarlar"};
+        String[] navIcons = {"🏠", "📦", "👤", "⚙"};
+
+        // Seçili öğeyi takip etmek için değişken
+        final int[] selectedIndex = {0}; // Ana Sayfa varsayılan olarak seçili
+
+        // LogoBox'u method kapsamında tanımla
+        HBox logoBox = null;
+
+        // Logo
+        if (launcherIcon != null && !launcherIcon.isError()) {
+            ImageView logoView = new ImageView(launcherIcon);
+            logoView.setFitWidth(60);
+            logoView.setFitHeight(60);
+            logoView.setPreserveRatio(true);
+
+            // Logo başlık
+            Label logoTitle = new Label("TerraMonic");
+            logoTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+            logoTitle.setTextFill(PRIMARY_COLOR);
+
+            logoBox = new HBox(10);
+            logoBox.setAlignment(Pos.CENTER_LEFT);
+            logoBox.getChildren().addAll(logoView, logoTitle);
+
+            navPanel.getChildren().add(logoBox);
+            navPanel.getChildren().add(new Separator());
+        }
+
+        // Tüm menü öğelerini saklayacak liste
+        List<HBox> menuItems = new ArrayList<>();
+
+        // Her öğe için buton oluştur
+        final HBox finalLogoBox = logoBox; // Lambda için final referans
+        for (int i = 0; i < navItems.length; i++) {
+            final int index = i;
+
+            HBox navItem = new HBox(10);
+            navItem.setPadding(new Insets(10, 15, 10, 15));
+            navItem.setAlignment(Pos.CENTER_LEFT);
+            navItem.setCursor(Cursor.HAND);
+
+            // İkon ve metin
+            Label iconLabel = new Label(navIcons[i]);
+            iconLabel.setFont(Font.font(FONT_FAMILY, 16));
+
+            Label textLabel = new Label(navItems[i]);
+            textLabel.setFont(Font.font(FONT_FAMILY, 14));
+
+            // Görsel öğeleri ekle
+            navItem.getChildren().addAll(iconLabel, textLabel);
+
+            // Menü öğesini listeye ekle
+            menuItems.add(navItem);
+
+            navPanel.getChildren().add(navItem);
+        }
+
+        // Menü öğelerinin görünümünü güncelleyen yardımcı metod
+        Consumer<Integer> updateMenuItemStyles = (hoveredIndex) -> {
+            for (int i = 0; i < menuItems.size(); i++) {
+                HBox item = menuItems.get(i);
+                Label itemIcon = (Label) item.getChildren().get(0);
+                Label itemText = (Label) item.getChildren().get(1);
+
+                if (i == selectedIndex[0]) {
+                    // Seçili öğe
+                    itemIcon.setTextFill(PRIMARY_COLOR);
+                    itemText.setTextFill(PRIMARY_COLOR);
+                    item.setStyle("-fx-background-color: #1A1A1A; -fx-background-radius: 5px;");
+                } else if (i == hoveredIndex) {
+                    // Üzerinde fare olan öğe
+                    itemIcon.setTextFill(PRIMARY_COLOR);
+                    itemText.setTextFill(PRIMARY_COLOR);
+                    item.setStyle("-fx-background-color: #1A1A1A; -fx-background-radius: 5px;");
+                } else {
+                    // Diğer öğeler
+                    itemIcon.setTextFill(TEXT_SECONDARY);
+                    itemText.setTextFill(TEXT_SECONDARY);
+                    item.setStyle("-fx-background-color: transparent;");
+                }
+            }
+        };
+
+        // İlk render için menü öğelerini güncelle
+        updateMenuItemStyles.accept(-1);
+
+        // Her öğe için olay işleyicilerini ekle
+        for (int i = 0; i < menuItems.size(); i++) {
+            final int index = i;
+            HBox navItem = menuItems.get(i);
+
+            // Hover efekti
+            navItem.setOnMouseEntered(e -> {
+                updateMenuItemStyles.accept(index);
+            });
+
+            navItem.setOnMouseExited(e -> {
+                updateMenuItemStyles.accept(-1);
+            });
+
+            // Tıklama efekti
+            navItem.setOnMousePressed(e -> {
+                navItem.setStyle("-fx-background-color: #151515; -fx-background-radius: 5px;");
+            });
+
+            navItem.setOnMouseReleased(e -> {
+                // Seçili öğeyi güncelle
+                selectedIndex[0] = index;
+                updateMenuItemStyles.accept(-1);
+
+                // İçeriği değiştir
+                StackPane centerPanel = (StackPane) ((BorderPane) ((VBox) root.getCenter()).getChildren().get(1)).getCenter();
+                centerPanel.getChildren().clear();
+                switch (navItems[index]) {
+                    case "Ana Sayfa":
+                        centerPanel.getChildren().add(createNewsPanel());
+                        break;
+                    case "Mod Paketleri":
+                        centerPanel.getChildren().add(createModManagementPanel());
+                        break;
+                    case "Hesap":
+                        centerPanel.getChildren().add(createAccountPanel());
+                        break;
+                    case "Ayarlar":
+                        centerPanel.getChildren().add(createSettingsPanel());
+                        break;
+                }
+            });
+        }
+
+        // Boşluk
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+        navPanel.getChildren().add(spacer);
+
+        // Alt kısım - Versiyon - YENİ VERSİYONLAR
+        Label versionLabel = new Label("TerraMonic " + currentLauncherVersion);
+        versionLabel.setFont(Font.font(FONT_FAMILY, 12));
+        versionLabel.setTextFill(TEXT_SECONDARY);
+
+        // Minecraft versiyon + Fabric - YENİ SİSTEM
+        Label mcVersionLabel = new Label("Minecraft " + MINECRAFT_VERSION + " + Fabric " + FABRIC_VERSION);
+        mcVersionLabel.setFont(Font.font(FONT_FAMILY, 12));
+        mcVersionLabel.setTextFill(TEXT_SECONDARY);
+
+        VBox versionBox = new VBox(5);
+        versionBox.getChildren().addAll(versionLabel, mcVersionLabel);
+        navPanel.getChildren().add(versionBox);
+
+        return navPanel;
+    }
+
+    /**
+     * Mod yönetim panelini oluşturur - ESKİ SİSTEM KORUNDU
+     */
+    private VBox createModManagementPanel() {
+        VBox modPanel = new VBox(20);
+        modPanel.setPadding(new Insets(20));
+        modPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+
+        // Başlık
+        Label title = new Label("MOD YÖNETİMİ");
+        title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
+        title.setTextFill(PRIMARY_COLOR);
+
+        // Mod listesi
+        ListView<String> modListView = new ListView<>();
+        modListView.setPrefHeight(300);
+        modListView.setStyle(
+                "-fx-background-color: #1A1A1A;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-control-inner-background: #1A1A1A;"
+        );
+
+        // Mevcut modları yükle
+        loadMods(modListView);
+
+        // Modları sıfırla butonu
+        Button resetModButton = createStyledButton("MODLARI SIFIRLA", 150, 40);
+        resetModButton.setOnAction(e -> {
+            try {
+                deleteDirectory(TERRAMONIC_PATH.resolve("mods"));
+                Files.createDirectories(TERRAMONIC_PATH.resolve("mods"));
+                loadMods(modListView);
+                showInfo("Modlar sıfırlandı!");
+            } catch (IOException ex) {
+                showError("Modlar sıfırlanamadı: " + ex.getMessage());
+            }
+        });
+
+        // Mod kaldır butonu
+        Button removeModButton = createStyledButton("MOD KALDIR", 150, 40);
+        removeModButton.setOnAction(e -> {
+            String selectedMod = modListView.getSelectionModel().getSelectedItem();
+            if (selectedMod != null) {
+                try {
+                    Files.deleteIfExists(TERRAMONIC_PATH.resolve("mods").resolve(selectedMod));
+                    modListView.getItems().remove(selectedMod);
+                    showInfo("Mod kaldırıldı: " + selectedMod);
+                } catch (IOException ex) {
+                    showError("Mod kaldırılamadı: " + ex.getMessage());
+                }
+            } else {
+                showError("Lütfen kaldırılacak bir mod seçin.");
+            }
+        });
+
+        // Profil kaydet
+        TextField profileNameField = createStyledTextField("Profil adı girin");
+        Button saveProfileButton = createStyledButton("PROFİLİ KAYDET", 150, 40);
+        saveProfileButton.setOnAction(e -> {
+            String profileName = profileNameField.getText().trim();
+            if (profileName.isEmpty()) {
+                shakeNode(profileNameField);
+                profileNameField.setStyle(profileNameField.getStyle() + "-fx-border-color: #FF3A3A;");
+                return;
+            }
+            saveModProfile(profileName);
+            profileNameField.clear();
+        });
+
+        // Profil yükle
+        ComboBox<String> profileComboBox = new ComboBox<>();
+        loadProfileList(profileComboBox);
+        profileComboBox.setStyle(
+                "-fx-background-color: #222222;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-prompt-text-fill: white;" +
+                        "-fx-border-color: #333333;"
+        );
+
+        Button loadProfileButton = createStyledButton("PROFİLİ YÜKLE", 150, 40);
+        loadProfileButton.setOnAction(e -> {
+            String selectedProfile = profileComboBox.getSelectionModel().getSelectedItem();
+            if (selectedProfile != null) {
+                loadModProfile(selectedProfile);
+                loadMods(modListView);
+            } else {
+                showError("Lütfen yüklenecek bir profil seçin.");
+            }
+        });
+
+        // Butonları düzenle
+        HBox modButtons = new HBox(20, resetModButton, removeModButton);
+        modButtons.setAlignment(Pos.CENTER_LEFT);
+
+        HBox profileButtons = new HBox(20, profileNameField, saveProfileButton);
+        profileButtons.setAlignment(Pos.CENTER_LEFT);
+
+        HBox loadProfileBox = new HBox(20, profileComboBox, loadProfileButton);
+        loadProfileBox.setAlignment(Pos.CENTER_LEFT);
+
+        modPanel.getChildren().addAll(
+                title,
+                new Separator(),
+                modListView,
+                modButtons,
+                profileButtons,
+                loadProfileBox
+        );
+
+        return modPanel;
+    }
+
+    /**
+     * Hesap panelini oluşturur - ESKİ SİSTEM KORUNDU
+     */
+    private VBox createAccountPanel() {
+        VBox accountPanel = new VBox(20);
+        accountPanel.setPadding(new Insets(20));
+        accountPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+
+        // Başlık
+        Label title = new Label("HESAP");
+        title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
+        title.setTextFill(PRIMARY_COLOR);
+
+        // Çıkış yap butonu
+        Button logoutButton = createStyledButton("ÇIKIŞ YAP", 150, 40);
+        logoutButton.setOnAction(e -> {
+            playerName = "";
+            showLoginScreen();
+        });
+
+        accountPanel.getChildren().addAll(title, new Separator(), logoutButton);
+        return accountPanel;
+    }
+
+    /**
+     * Ayarlar panelini oluşturur - ESKİ SİSTEM KORUNDU
+     */
+    private VBox createSettingsPanel() {
+        VBox settingsPanel = new VBox(20);
+        settingsPanel.setPadding(new Insets(20));
+        settingsPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+
+        // Başlık
+        Label title = new Label("AYARLAR");
+        title.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
+        title.setTextFill(PRIMARY_COLOR);
+
+        // Placeholder içerik
+        Label content = new Label("Ayarlar bölümü geliştirme aşamasında.");
+        content.setFont(Font.font(FONT_FAMILY, 16));
+        content.setTextFill(TEXT_COLOR);
+
+        settingsPanel.getChildren().addAll(title, new Separator(), content);
+        return settingsPanel;
+    }
+
+    /**
+     * Sağ profil panelini oluşturur - ESKİ SİSTEM KORUNDU
+     */
+    private VBox createProfilePanel() {
+        VBox profilePanel = new VBox(15);
+        profilePanel.setPadding(new Insets(20, 15, 20, 15));
+        profilePanel.setPrefWidth(250);
+        profilePanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_COLOR) + ";");
+
+        // Profil başlığı
+        Label profileTitle = new Label("OYUNCU PROFİLİ");
+        profileTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
+        profileTitle.setTextFill(TEXT_SECONDARY);
+
+        // Kullanıcı avatarı
+        Circle avatarCircle = new Circle(40);
+        StackPane avatarStack = new StackPane();
+        if (!playerName.isEmpty()) {
+            // Avatar URL
+            String avatarUrl = "https://minotar.net/helm/" + playerName + "/100.png";
+
+            Task<Image> loadAvatarTask = new Task<>() {
+                @Override
+                protected Image call() throws Exception {
+                    return new Image(avatarUrl, 100, 100, true, true);
+                }
+            };
+
+            loadAvatarTask.setOnSucceeded(event -> {
+                Image avatar = loadAvatarTask.getValue();
+                if (avatar != null && !avatar.isError()) {
+                    avatarCircle.setFill(new javafx.scene.paint.ImagePattern(avatar));
+                } else {
+                    // Varsayılan avatar
+                    avatarCircle.setFill(PRIMARY_COLOR);
+                    Text initials = new Text(playerName.substring(0, 1).toUpperCase());
+                    initials.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 30));
+                    initials.setFill(Color.BLACK);
+                    avatarStack.getChildren().add(initials);
+                }
+            });
+
+            loadAvatarTask.setOnFailed(event -> {
+                avatarCircle.setFill(PRIMARY_COLOR);
+                Text initials = new Text(playerName.substring(0, 1).toUpperCase());
+                initials.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 30));
+                initials.setFill(Color.BLACK);
+                avatarStack.getChildren().add(initials);
+            });
+
+            executorService.submit(loadAvatarTask);
+        } else {
+            // Varsayılan avatar
+            avatarCircle.setFill(PRIMARY_COLOR);
+            Text initials = new Text("U");
+            initials.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 30));
+            initials.setFill(Color.BLACK);
+            avatarStack.getChildren().add(initials);
+        }
+
+        // Avatar kenar çizgisi
+        Circle avatarBorder = new Circle(43);
+        avatarBorder.setFill(Color.TRANSPARENT);
+        avatarBorder.setStroke(PRIMARY_COLOR);
+        avatarBorder.setStrokeWidth(2);
+
+        avatarStack.getChildren().addAll(avatarBorder, avatarCircle);
+
+        // Kullanıcı adı
+        Label usernameLabel = new Label(playerName.isEmpty() ? "Kullanıcı" : playerName);
+        usernameLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+        usernameLabel.setTextFill(TEXT_COLOR);
+
+        // Hesap tipi
+        Label accountTypeLabel = new Label("Oyuncu");
+        accountTypeLabel.setFont(Font.font(FONT_FAMILY, 14));
+        accountTypeLabel.setTextFill(TEXT_SECONDARY);
+
+        // Kullanıcı bilgileri
+        VBox userInfoBox = new VBox(5);
+        userInfoBox.setAlignment(Pos.CENTER);
+        userInfoBox.getChildren().addAll(avatarStack, usernameLabel, accountTypeLabel);
+
+        // Ayırıcı
+        Separator separator = new Separator();
+        separator.setPadding(new Insets(10, 0, 10, 0));
+
+        // Oyun istatistikleri
+        Label statsTitle = new Label("İSTATİSTİKLER");
+        statsTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
+        statsTitle.setTextFill(TEXT_SECONDARY);
+
+        // Örnek istatistikler
+        VBox statsBox = new VBox(15);
+
+        HBox playTimeBox = createStatInfoItem("Oynama Süresi", "32 saat");
+        HBox gamesBox = createStatInfoItem("Coin", "126");
+        HBox sayginlikBox = createStatInfoItem("Saygınlık Seviyesi", "10");
+
+        statsBox.getChildren().addAll(playTimeBox, gamesBox, sayginlikBox);
+
+        // Ayırıcı
+        Separator separator2 = new Separator();
+        separator2.setPadding(new Insets(10, 0, 10, 0));
+
+        // Arkadaşlar (Basit)
+        Label friendsTitle = new Label("ARKADAŞLAR (3/5 ÇEVRİMİÇİ)");
+        friendsTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
+        friendsTitle.setTextFill(TEXT_SECONDARY);
+
+        // Örnek arkadaşlar
+        VBox friendsBox = new VBox(10);
+
+        HBox friend1 = createFriendItem("G3YIK", true);
+        HBox friend2 = createFriendItem("AethriusMC", true);
+        HBox friend3 = createFriendItem("YusufKGD", false);
+        HBox friend4 = createFriendItem("CraftMaster", true);
+        HBox friend5 = createFriendItem("YunusKGD", false);
+
+        friendsBox.getChildren().addAll(friend1, friend2, friend3, friend4, friend5);
+
+        // Paneli düzenle
+        profilePanel.getChildren().addAll(
+                profileTitle,
+                userInfoBox,
+                separator,
+                statsTitle,
+                statsBox,
+                separator2,
+                friendsTitle,
+                friendsBox
+        );
+
+        return profilePanel;
+    }
+
+    /**
+     * Alt paneli (oyun başlatma kontrolleri) oluşturur - ESKİ SİSTEM KORUNDU
+     */
+    private HBox createBottomPanel() {
+        HBox bottomPanel = new HBox();
+        bottomPanel.setPadding(new Insets(15, 25, 15, 25));
+        bottomPanel.setAlignment(Pos.CENTER_LEFT);
+        bottomPanel.setSpacing(20);
+        bottomPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_COLOR) + ";");
+
+        // Sistem tepsisine ikon ekle
+        addSystemTrayIcon();
+
+        playButton = createStyledButton("OYUNU BAŞLAT", 200, 35);
+        playButton.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 18));
+        playButton.setAlignment(Pos.CENTER);
+        playButton.setTranslateX(-15);
+        playButton.setTranslateY(-5);
+
+        Label ramLabel = new Label("RAM:");
+        ramLabel.setFont(Font.font(FONT_FAMILY, 14));
+        ramLabel.setTextFill(TEXT_COLOR);
+
+        ComboBox<String> ramComboBox = new ComboBox<>();
+        List<String> ramOptions = Arrays.asList("2 GB", "4 GB", "6 GB", "8 GB", "12 GB", "16 GB");
+        ramComboBox.getItems().addAll(ramOptions);
+        ramComboBox.getSelectionModel().select(1); // 4GB default
+
+        Label resolutionLabel = new Label("Çözünürlük:");
+        resolutionLabel.setFont(Font.font(FONT_FAMILY, 14));
+        resolutionLabel.setTextFill(TEXT_COLOR);
+
+        ComboBox<String> resolutionComboBox = new ComboBox<>();
+        List<String> resolutionOptions = Arrays.asList("1280x720", "1920x1080", "2560x1440", "3840x2160");
+        resolutionComboBox.getItems().addAll(resolutionOptions);
+        resolutionComboBox.getSelectionModel().select(1); // 1920x1080 default
+
+        downloadProgress = new ProgressBar(0);
+        downloadProgress.setPrefWidth(150);
+        downloadProgress.setStyle("-fx-accent: " + toHexString(PRIMARY_COLOR) + ";");
+        downloadProgress.setVisible(false);
+
+        statusLabel = new Label("");
+        statusLabel.setFont(Font.font(FONT_FAMILY, 14));
+        statusLabel.setTextFill(TEXT_SECONDARY);
+        statusLabel.setVisible(false);
+
+        playButton.setOnAction(e -> launchGame());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox ramBox = new HBox(5);
+        ramBox.setAlignment(Pos.CENTER_LEFT);
+        ramBox.getChildren().addAll(ramLabel, ramComboBox);
+
+        HBox resolutionBox = new HBox(5);
+        resolutionBox.setAlignment(Pos.CENTER_LEFT);
+        resolutionBox.getChildren().addAll(resolutionLabel, resolutionComboBox);
+
+        bottomPanel.getChildren().addAll(
+                playButton,
+                new VBox(5, downloadProgress, statusLabel),
+                spacer,
+                ramBox,
+                resolutionBox
+        );
+
+        return bottomPanel;
+    }
+
+    /**
+     * Sistem tepsisine ikon ekler - ESKİ SİSTEM KORUNDU
+     */
+    private void addSystemTrayIcon() {
+        if (SystemTray.isSupported()) {
+            System.out.println("Sistem tepsisi destekleniyor, ikon yükleniyor...");
+            try {
+                SystemTray tray = SystemTray.getSystemTray();
+                BufferedImage trayIconImage = null;
+
+                // PNG dosyasını yükle
+                if (Files.exists(ICON_FILE)) {
+                    System.out.println("PNG dosyası bulundu: " + ICON_FILE.toString());
+                    try {
+                        trayIconImage = ImageIO.read(ICON_FILE.toFile());
+                        if (trayIconImage != null) {
+                            System.out.println("PNG başarıyla yüklendi, boyut: " + trayIconImage.getWidth() + "x" + trayIconImage.getHeight());
+                        } else {
+                            System.out.println("PNG yüklenemedi, null döndü.");
+                        }
+                    } catch (IOException e) {
+                        System.out.println("PNG dosyası okunamadı: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("PNG dosyası bulunamadı: " + ICON_FILE.toString());
+                }
+
+                // Fallback: Basit bir AWT görseli oluştur
+                if (trayIconImage == null) {
+                    System.out.println("Fallback görsel oluşturuluyor...");
+                    trayIconImage = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g = trayIconImage.createGraphics();
+                    g.setColor(new java.awt.Color(0, 255, 0)); // Yeşil daire
+                    g.fillOval(0, 0, 64, 64);
+                    g.dispose();
+                }
+
+                TrayIcon trayIcon = new TrayIcon(trayIconImage, "TerraMonic Launcher");
+                trayIcon.setImageAutoSize(true);
+
+                // Tıklama için popup menü
+                PopupMenu popup = new PopupMenu();
+                MenuItem exitItem = new MenuItem("Çıkış");
+                exitItem.addActionListener(e -> Platform.exit());
+                popup.add(exitItem);
+                trayIcon.setPopupMenu(popup);
+
+                tray.add(trayIcon);
+                System.out.println("Sistem tepsisi ikonu başarıyla eklendi.");
+            } catch (AWTException e) {
+                System.out.println("Sistem tepsisi ikonu ayarlanamadı: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Sistem tepsisi desteklenmiyor.");
+        }
+    }
+
+    /**
+     * ESKİ SİSTEMDEN KORUNAN HELPER METODLARI
+     */
+    private void loadMods(ListView<String> modListView) {
+        modListView.getItems().clear();
+        try {
+            Files.list(TERRAMONIC_PATH.resolve("mods"))
+                    .filter(path -> path.toString().endsWith(".jar"))
+                    .forEach(path -> modListView.getItems().add(path.getFileName().toString()));
+        } catch (IOException e) {
+            Platform.runLater(() -> showError("Modlar yüklenemedi: " + e.getMessage()));
+        }
+    }
+
+    private void loadProfileList(ComboBox<String> profileComboBox) {
+        profileComboBox.getItems().clear();
+        try {
+            Files.list(MODS_PROFILES_PATH)
+                    .filter(path -> path.toString().endsWith(".zip"))
+                    .forEach(path -> profileComboBox.getItems().add(path.getFileName().toString()));
+        } catch (IOException e) {
+            Platform.runLater(() -> showError("Profiller yüklenemedi: " + e.getMessage()));
+        }
+    }
+
+    private void saveModProfile(String profileName) {
+        try {
+            Path zipPath = MODS_PROFILES_PATH.resolve(profileName + ".zip");
+            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipPath.toFile()))) {
+                // Mods klasörü
+                Path modsPath = TERRAMONIC_PATH.resolve("mods");
+                if (Files.exists(modsPath)) {
+                    Files.walk(modsPath)
+                            .filter(path -> !Files.isDirectory(path))
+                            .forEach(path -> {
+                                try {
+                                    addToZip(path, "mods/" + modsPath.relativize(path).toString(), zos);
+                                } catch (IOException e) {
+                                    Platform.runLater(() -> showError("Mod dosyası zip'e eklenemedi: " + e.getMessage()));
+                                }
+                            });
+                }
+
+                // Config klasörü
+                Path configPath = TERRAMONIC_PATH.resolve("config");
+                if (Files.exists(configPath)) {
+                    Files.walk(configPath)
+                            .filter(path -> !Files.isDirectory(path))
+                            .forEach(path -> {
+                                try {
+                                    addToZip(path, "config/" + configPath.relativize(path).toString(), zos);
+                                } catch (IOException e) {
+                                    Platform.runLater(() -> showError("Config dosyası zip'e eklenemedi: " + e.getMessage()));
+                                }
+                            });
+                }
+            }
+            Platform.runLater(() -> showInfo("Profil başarıyla kaydedildi: " + profileName));
+        } catch (IOException e) {
+            Platform.runLater(() -> showError("Profil kaydedilemedi: " + e.getMessage()));
+        }
+    }
+
+    private void addToZip(Path filePath, String entryName, ZipOutputStream zos) throws IOException {
+        ZipEntry entry = new ZipEntry(entryName);
+        zos.putNextEntry(entry);
+        Files.copy(filePath, zos);
+        zos.closeEntry();
+    }
+
+    private void loadModProfile(String profileName) {
+        try {
+            // Mevcut modları ve config'i temizle
+            Path modsPath = TERRAMONIC_PATH.resolve("mods");
+            Path configPath = TERRAMONIC_PATH.resolve("config");
+            deleteDirectory(modsPath);
+            deleteDirectory(configPath);
+            Files.createDirectories(modsPath);
+            Files.createDirectories(configPath);
+
+            // Zip dosyasını çıkar
+            Path zipPath = MODS_PROFILES_PATH.resolve(profileName);
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipPath.toFile()))) {
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    String entryName = entry.getName();
+                    Path destPath;
+
+                    // Dosya yoluna göre hedef belirle
+                    if (entryName.startsWith("mods/")) {
+                        destPath = modsPath.resolve(entryName.substring("mods/".length()));
+                    } else if (entryName.startsWith("config/")) {
+                        destPath = configPath.resolve(entryName.substring("config/".length()));
+                    } else {
+                        continue; // Diğer dosyaları atla
+                    }
+
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(destPath);
+                    } else {
+                        Files.createDirectories(destPath.getParent());
+                        Files.copy(zis, destPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    zis.closeEntry();
+                }
+            }
+            Platform.runLater(() -> showInfo("Profil başarıyla yüklendi: " + profileName));
+        } catch (IOException e) {
+            Platform.runLater(() -> showError("Profil yüklenemedi: " + e.getMessage()));
+        }
+    }
+
+    private HBox createStatInfoItem(String label, String value) {
+        Label labelText = new Label(label + ":");
+        labelText.setFont(Font.font(FONT_FAMILY, 14));
+        labelText.setTextFill(TEXT_SECONDARY);
+
+        Label valueText = new Label(value);
+        valueText.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
+        valueText.setTextFill(TEXT_COLOR);
+
+        HBox statBox = new HBox(10);
+        statBox.setAlignment(Pos.CENTER_LEFT);
+        statBox.getChildren().addAll(labelText, valueText);
+
+        return statBox;
+    }
+
+    private HBox createFriendItem(String name, boolean isOnline) {
+        Circle statusCircle = new Circle(5);
+        statusCircle.setFill(isOnline ? PRIMARY_COLOR : Color.web("#666666"));
+
+        Label nameLabel = new Label(name);
+        nameLabel.setFont(Font.font(FONT_FAMILY, 14));
+        nameLabel.setTextFill(isOnline ? TEXT_COLOR : TEXT_SECONDARY);
+
+        HBox friendBox = new HBox(10);
+        friendBox.setAlignment(Pos.CENTER_LEFT);
+        friendBox.getChildren().addAll(statusCircle, nameLabel);
+
+        return friendBox;
+    }
+
+    /**
+     * OYUNU BAŞLATMA METODUPELLEGİ
+     */
+    private void launchGame() {
+        // Basit bir placeholder - tam oyun başlatma sistemi burada olacak
         Platform.runLater(() -> {
-            showInfo("Oyun başlatma ekranına geçiliyor...");
+            downloadProgress.setVisible(true);
+            statusLabel.setVisible(true);
+            statusLabel.setText("Oyun başlatılıyor...");
+            playButton.setDisable(true);
+            
+            // 3 saniye sonra gizle
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), e -> {
+                downloadProgress.setVisible(false);
+                statusLabel.setVisible(false);
+                playButton.setDisable(false);
+                showInfo("Oyun başlatıldı! (Demo Mode)");
+            }));
+            timeline.play();
         });
     }
 
