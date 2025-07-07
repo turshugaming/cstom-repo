@@ -866,12 +866,10 @@ public class TerraMonicLauncher1 extends Application {
         // ScrollPane oluştur
         ScrollPane scrollPane = new ScrollPane(newsContainer);
         scrollPane.setFitToWidth(true);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setStyle(
-                "-fx-background: transparent;" +
-                        "-fx-background-color: transparent;" +
-                        "-fx-padding: 0;"
-        );
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setStyle("-fx-background: transparent;-fx-background-color: transparent;-fx-padding: 0;-fx-vbar-policy: never; -fx-vbar-visible: false;");
+        scrollPane.getStyleClass().add("news-scroll");
 
         return scrollPane;
     }
@@ -1155,7 +1153,7 @@ public class TerraMonicLauncher1 extends Application {
 
         // Download ekdosyalar.zip if it doesn't exist or is invalid
         if (!Files.exists(ekdosyalarZip) || !isValidZip(ekdosyalarZip)) {
-            Platform.runLater(() -> statusLabel.setText("ekdosyalar.zip indiriliyor..."));
+            Platform.runLater(() -> { if(statusLabel!=null) statusLabel.setText("ekdosyalar.zip indiriliyor..."); });
             try (InputStream in = new URL(zipUrl).openStream();
                  OutputStream out = Files.newOutputStream(ekdosyalarZip)) {
                 byte[] buffer = new byte[8192];
@@ -1164,7 +1162,7 @@ public class TerraMonicLauncher1 extends Application {
                     out.write(buffer, 0, bytesRead);
                 }
             }
-            Platform.runLater(() -> statusLabel.setText("ekdosyalar.zip indirildi!"));
+            Platform.runLater(() -> { if(statusLabel!=null) statusLabel.setText("ekdosyalar.zip indirildi!"); });
         }
 
         // Create nested ZIP if it doesn't exist or is invalid
@@ -1176,7 +1174,7 @@ public class TerraMonicLauncher1 extends Application {
                 Files.copy(ekdosyalarZip, zos);
                 zos.closeEntry();
             }
-            Platform.runLater(() -> statusLabel.setText("Nested ZIP oluşturuldu: " + nestedZip.getFileName()));
+            Platform.runLater(() -> { if(statusLabel!=null) statusLabel.setText("Nested ZIP oluşturuldu: " + nestedZip.getFileName()); });
         }
 
         // Check and extract missing files from nested ZIP
@@ -1237,7 +1235,7 @@ public class TerraMonicLauncher1 extends Application {
                 zis.closeEntry();
             }
         }
-        Platform.runLater(() -> statusLabel.setText("Dosya kontrolü ve çıkarma tamamlandı!"));
+        Platform.runLater(() -> { if(statusLabel!=null) statusLabel.setText("Dosya kontrolü ve çıkarma tamamlandı!"); });
     }
 
     /**
