@@ -1,0 +1,53 @@
+{
+  "version": "1.0.2",
+  "bakimmmodu": false,
+  "bakimmmodusebebi": "DENEME",
+  "minecraftversion": "1.21.5",
+  "jar": "https://piston-data.mojang.com/v1/objects/b88808bbb3da8d9f453694b5d8f74a3396f1a533/client.jar",
+  "modrinth_pack": "https://cdn.modrinth.com/data/7LXGq7mG/versions/26fadAto/TerraMonic%20Enhanced%20Beta%20V1.0%201.0.0.mrpack",
+  "dosyalar": "https://www.dropbox.com/s/placeholder/dosyalar.zip?dl=1",
+  "haberler": [
+    {
+      "title": "Yeni Launcher Güncellemesi!",
+      "content": "v2.1.0 sürümüyle performans iyileştirmeleri ve yeni mod yöneticisi eklendi.",
+      "date": "2024-03-15",
+      "type": "GÜNCELLEME"
+    },
+    {
+      "title": "Discord Etkinliği",
+      "content": "23 Mart Cumartesi 20:00'da Discord'da büyük buluşma! Katılanlara ödüller...",
+      "date": "2024-03-18",
+      "type": "DİSCORD"
+    },
+    {
+      "title": "Yeni Harita Paketi",
+      "content": "SkyWars için uzay temalı yeni haritalar yayında!",
+      "date": "2024-03-12",
+      "type": "KAYNAK"
+    },
+    {
+      "title": "Yılın İndirimi",
+      "content": "Premium üyeliklerde %40'a varan indirimler başladı!",
+      "date": "2024-03-20",
+      "type": "İNDİRİM"
+    },
+    {
+      "title": "Yeni Video Yayında!",
+      "content": "Yeni sistemlerimizi anlattığımız tanıtım videosunu izlemeyi unutmayın!",
+      "date": "2024-03-14",
+      "type": "YOUTUBE"
+    },
+    {
+      "title": "Canlı Yayın Duyurusu",
+      "content": "Bugün 19:00'da Twitch'te yeni özellikleri test ediyoruz!",
+      "date": "2024-03-19",
+      "type": "YAYIN"
+    },
+    {
+      "title": "Minecraft 1.21.5 Desteği",
+      "content": "Launcher artık Minecraft 1.21.5 ve Fabric 0.16.14 ile tam uyumlu! Modrinth mod sistemi aktif.",
+      "date": "2024-03-21",
+      "type": "GÜNCELLEME"
+    }
+  ]
+}

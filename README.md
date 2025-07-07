@@ -1,267 +1,193 @@
-# 🔧 UltimateItemsAdder - 1.21.5 Minecraft Uyumluluk Güncellemesi
+# TerraMonic Launcher v2.0
 
-Bu README dosyası, **1.21.5 Minecraft** sürümüne uyumluluk için yapılan tüm değişiklikleri açıklar.
+Modern, özellik zengin Minecraft launcher'ı Modrinth mod sistemi ve Fabric 1.21.5 desteği ile.
 
-## 🚨 Ana Problem
-1.21.5 Minecraft sürümünde texture oluşuyordu ama item'lara assign edilmiyordu. Bu sorun aşağıdaki nedenlerden kaynaklanıyordu:
+## ✨ Özellikler
 
-1. **Eski Resource Pack Formatı** kullanılıyordu
-2. **Custom Model Data Assignment** eksikti
-3. **Base Item Model Update** sistemi eski formatı kullanıyordu
-4. **Pack Format Number** güncel değildi
+- **Modrinth Mod Sistemi**: Modrinth mod paketlerini otomatik indirme ve yükleme
+- **Fabric 1.21.5 Desteği**: Otomatik Fabric kurulumu ve yapılandırması  
+- **Birleşik JSON Konfigürasyonu**: Tek dosyada tüm ayarlar
+- **Otomatik Güncelleme**: Launcher ve modlar için otomatik güncelleme sistemi
+- **Modern UI**: Lunar Client benzeri şık arayüz
+- **Güvenli**: Şifreleme sorunları düzeltildi, boş dosya bırakılmıyor
 
-## ✅ Yapılan Güncellemeler
+## 🚀 Kurulum
 
-### 1. 📦 `createItemStack()` Methodu Güncellendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~486-520)
+### 1. Gereksinimler
+- Java 11 veya üzeri
+- JavaFX kütüphaneleri
+- JSON library (org.json)
 
-#### Değişiklikler:
-- ✅ **Otomatik Custom Model Data Assignment** eklendi
-- ✅ **Registry-based Enchantment System** (1.21.5 uyumlu)
-- ✅ **Enhanced Persistent Data Container** kullanımı
-- ✅ **Model Data Reference** storage eklendi
+### 2. Konfigürasyon
+
+#### A. JSON URL'ini Ayarlayın
+
+**ŞU ANDA LOCAL DOSYA KULLANILIYOR** - Test için proje klasöründeki `launcher.json` dosyası kullanılıyor.
+
+Canlı sunucu için `TerraMonicLauncher1.java` dosyasında 90. satırdaki URL'i değiştirin:
 
 ```java
-// Otomatik ID assignment (hash-based)
-if (customModelData > 0) {
-    meta.setCustomModelData(customModelData);
-} else {
-    int autoId = Math.abs(id.hashCode()) % 10000 + 1000;
-    meta.setCustomModelData(autoId);
-    customModelData = autoId;
+// Şu anki (test için):
+private static final String LAUNCHER_JSON_URL = "file:///...launcher.json";
+
+// Değiştirin:
+private static final String LAUNCHER_JSON_URL = "https://your-server.com/launcher.json";
+```
+
+#### B. Icon Dosyasını Ekleyin
+`src/main/resources/com/terramonic/icon.png` konumuna launcher ikonunuzu yerleştirin.
+
+### 3. launcher.json Dosyası
+JSON dosyanızı aşağıdaki formatta hazırlayın:
+
+```json
+{
+  "version": "1.0.2",
+  "bakimmmodu": false,
+  "bakimmmodusebebi": "DENEME",
+  "minecraftversion": "1.21.5",
+  "jar": "https://piston-data.mojang.com/v1/objects/..../client.jar",
+  "modrinth_pack": "https://cdn.modrinth.com/data/.../modpack.mrpack",
+  "haberler": [
+    {
+      "title": "Haber Başlığı",
+      "content": "Haber içeriği...",
+      "date": "2024-03-21",
+      "type": "GÜNCELLEME"
+    }
+  ]
 }
 ```
 
-### 2. 🎨 `updateBaseItemModel()` Methodu 1.21.5 Formatına Güncellendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3611-3680)
+## 📋 JSON Ayarları
 
-#### Değişiklikler:
-- ✅ **Yeni 1.21.5 Model Format** kullanımı
-- ✅ **Integer-based when values** (eski string yerine)
-- ✅ **Enhanced fallback system** 
-- ✅ **Better case management**
+### Ana Ayarlar
+- `version`: Launcher versiyonu
+- `bakimmmodu`: Bakım modu açık/kapalı (true/false)
+- `bakimmmodusebebi`: Bakım modu nedeni
+- `minecraftversion`: Minecraft versiyonu (örn: "1.21.5")
+- `jar`: Minecraft client.jar indirme URL'i
+- `modrinth_pack`: Modrinth mod paketi (.mrpack) URL'i
 
-```java
-// 1.21.5 Yeni base model format
-JsonObject modelWrapper = new JsonObject();
-modelWrapper.addProperty("type", "minecraft:select");
-modelWrapper.addProperty("property", "minecraft:custom_model_data");
+### Haber Türleri
+- `GÜNCELLEME`: Launcher/oyun güncellemeleri
+- `DİSCORD`: Discord etkinlikleri
+- `KAYNAK`: Yeni kaynaklar/haritalar
+- `İNDİRİM`: İndirim duyuruları
+- `YOUTUBE`: Video duyuruları
+- `YAYIN`: Canlı yayın duyuruları
+- `GENEL`: Genel haberler
+
+## 🔧 Çalışma Prensibi
+
+### 1. Başlangıç
+- Icon yüklenir (`com/terramonic/icon.png`)
+- Launcher config (`launcher.json`) indirilir
+- Versiyon kontrolü yapılır
+- Gerekirse config/mods temizlenir
+
+### 2. Fabric Kurulumu
+- `versions/fabric-loader-0.16.14-1.21.5/` klasörü oluşturulur
+- Client.jar `fabric-loader-0.16.14-1.21.5.jar` olarak indirilir
+- Fabric installer indirilip çalıştırılır
+- Kurulum tamamlandıktan sonra installer silinir
+
+### 3. Modrinth Sistemi
+- `.mrpack` dosyası indirilir
+- ZIP olarak çıkarılır
+- `modrinth.index.json` okunur
+- Her mod dosyası `downloads` URL'lerinden indirilir
+- `.terramonic/mods/` klasörüne yerleştirilir
+- Geçici dosyalar temizlenir
+
+### 4. Güncelleme Sistemi
+- Her açılışta versiyon kontrol edilir
+- Launcher güncellenirse:
+  - Config klasörü silinir
+  - Mods klasörü silinir
+  - Yeniden kurulum yapılır
+
+## 📁 Klasör Yapısı
+
+```
+%APPDATA%/.terramonic/
+├── mods/                    # Modrinth modları
+├── config/                  # Oyun ayarları
+├── versions/                # Minecraft versiyonları
+│   └── fabric-loader-0.16.14-1.21.5/
+│       ├── fabric-loader-0.16.14-1.21.5.jar
+│       └── fabric-loader-0.16.14-1.21.5.json
+├── libraries/               # Kütüphaneler
+├── natives/                 # Native dosyalar
+├── assets/                  # Oyun varlıkları
+├── mods_profiles/           # Mod profilleri
+└── terramonic_icon/         # Launcher ikonu
+    └── icon.png
 ```
 
-### 3. 📋 `createPackMeta()` Pack Format Güncellendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3305-3350)
+## 🎮 Oyun Başlatma
 
-#### Değişiklikler:
-- ✅ **Pack format 15** (1.21.5 için)
-- ✅ **Supported formats range** eklendi
-- ✅ **Enhanced filter** for better performance
+Launcher şu özellikleri destekler:
+- **RAM Ayarı**: 1GB - 64GB arası (sistem sınırları dahilinde)
+- **Çözünürlük**: 720p'den 12K'ya kadar desteklenen çözünürlükler
+- **Fabric Mods**: Modrinth paketi otomatik yüklenir
+- **Otomatik Java**: Sistem Java'sı kullanılır
 
-```java
-pack.addProperty("pack_format", 15); // 1.21.5 için
+## 🔒 Güvenlik İyileştirmeleri
 
-// Supported formats
-JsonObject supportedFormats = new JsonObject();
-supportedFormats.addProperty("min_inclusive", 13);
-supportedFormats.addProperty("max_inclusive", 15);
-```
+- ✅ ZIP şifreleme sorunları düzeltildi
+- ✅ Boş dosya bırakma sorunu çözüldü
+- ✅ Güvenli dosya indirme
+- ✅ Geçici dosyaların otomatik temizlenmesi
 
-### 4. 🖼️ `createItemModel()` Texture Handling İyileştirildi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3404-3474)
+## 🐛 Hata Ayıklama
 
-#### Değişiklikler:
-- ✅ **Better parent model selection** (weapon type based)
-- ✅ **Enhanced texture fallback** system
-- ✅ **Gui light option** eklendi
-- ✅ **Proper directory structure** support
+### Yaygın Sorunlar
 
-```java
-// 1.21.5 Parent model selection
-switch (item.weaponType.toUpperCase()) {
-    case "SWORD": case "AXE": case "PICKAXE":
-        parent = "minecraft:item/handheld";
-        break;
-    case "BOW":
-        parent = "minecraft:item/bow";
-        break;
-}
-```
+1. **"❌ JSON Yüklenemedi"**
+   - `launcher.json` dosyasının proje klasöründe olduğunu kontrol edin
+   - JSON formatının doğru olduğunu kontrol edin (https://jsonlint.com)
+   - Console'da detaylı hata mesajlarını kontrol edin
 
-### 5. 🎨 `createDefaultTextures()` Kalite İyileştirmesi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3709-3782)
+2. **"Modrinth pack URL bulunamadı"**
+   - JSON'da `modrinth_pack` field'ının mevcut olduğunu kontrol edin
+   - Console'da `🔍 JSON field kontrolleri` loglarını inceleyin
 
-#### Değişiklikler:
-- ✅ **Anti-aliasing support**
-- ✅ **Gradient backgrounds** with rarity colors
-- ✅ **Item type indicators** (kılıç, alet simgeleri)
-- ✅ **Proper item texture directory** structure
+3. **"Fabric kurulumu başarısız"**
+   - Java 11+ kurulu olduğunu kontrol edin
+   - Antivirus yazılımının engellediğini kontrol edin
 
-```java
-// Anti-aliasing aktif
-g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+4. **"Modrinth pack kurulumu başarısız"**
+   - Modrinth pack URL'inin geçerli olduğunu kontrol edin
+   - Yeterli disk alanınız olduğunu kontrol edin
 
-// Gradient arka plan
-GradientPaint gradient = new GradientPaint(0, 0, color1, 16, 16, color2);
-```
+### Debug Logları
+Artık launcher detaylı debug bilgileri veriyor:
+- 🔄 = İşlem başlıyor
+- ✅ = Başarılı
+- ❌ = Hatalı
+- ⚠️ = Uyarı
 
-### 6. 🧪 Yeni Test Sistemi Eklendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~6229-6282)
+### Log Dosyaları
+Tüm işlemler console'a yazdırılır. Hata ayıklama için console çıktısını kontrol edin.
 
-#### Özellikler:
-- ✅ **`/ui test <item_id>`** komutu eklendi
-- ✅ **Detaylı test bilgileri** gösterimi
-- ✅ **Resource pack durumu** kontrolü
-- ✅ **Test sonuçları** yorumlama kılavuzu
+## 🔄 Güncelleme
 
-```bash
-# Kullanım
-/ui test flame_sword
-
-# Çıktı
-✓ Test item verildi!
-=== Test Bilgileri ===
-Item ID: flame_sword
-Custom Model Data: 1001
-Texture: flame_sword
-Model: flame_sword
-Base Material: IRON_SWORD
-```
-
-## 🔄 Değişen Dosya Yapısı
-
-### Önceki Yapı:
-```
-plugins/UltimateItemsAdder/
-├── textures/
-│   ├── flame_sword.png
-│   └── ice_bow.png
-└── resource_pack/
-    └── assets/minecraft/models/item/
-```
-
-### Yeni Yapı (1.21.5):
-```
-plugins/UltimateItemsAdder/
-├── textures/
-│   └── item/                    # 🆕 item klasörü zorunlu
-│       ├── flame_sword.png
-│       └── ice_bow.png
-└── resource_pack/
-    └── assets/
-        ├── minecraft/models/item/
-        └── ultimateitems/         # 🆕 namespace klasörü
-            ├── models/item/
-            └── textures/item/
-```
-
-## 🚀 Kullanım Kılavuzu
-
-### 1. Plugin'i Test Et
-```bash
-# Resource pack'i yeniden oluştur
-/ui pack regenerate
-
-# Test item oluştur
-/ui test flame_sword
-
-# Reload plugin
-/ui reload
-```
-
-### 2. Yeni Item Oluştur
-```bash
-# Yeni item oluştur
-/ui create my_sword IRON_SWORD
-
-# Custom model data ayarla
-/ui edit my_sword modeldata 1500
-
-# Texture ayarla
-/ui edit my_sword texture my_sword
-```
-
-### 3. Texture Dosyalarını Yerleştir
-```bash
-# Texture dosyalarını koy
-plugins/UltimateItemsAdder/textures/item/my_sword.png
-
-# Resource pack'i yeniden oluştur
-/ui pack regenerate
-```
-
-## 🔍 Debug ve Sorun Giderme
-
-### Problem: Texture Görünmüyor
-```bash
-# 1. Test komutu kullan
-/ui test <item_id>
-
-# 2. Debug mode aç
-/ui debug on
-
-# 3. Resource pack durumunu kontrol et
-/ui pack status
-
-# 4. Pack'i yeniden oluştur
-/ui pack regenerate
-```
-
-### Problem: Custom Model Data Çalışmıyor
-```bash
-# 1. Model data kontrolü
-/ui info <item_id>
-
-# 2. Base material kontrolü
-/ui edit <item_id> material IRON_SWORD
-
-# 3. Model data reset
-/ui edit <item_id> modeldata 0  # otomatik assign için
-```
-
-## 📋 Uyumluluk Tablosu
-
-| Minecraft Sürümü | Pack Format | Durum |
-|-------------------|-------------|-------|
-| 1.20.4 | 22 | ❌ Eski |
-| 1.21.0 | 34 | ⚠️ Kısmen |
-| 1.21.3 | 34 | ⚠️ Kısmen |
-| 1.21.4 | 32 | ⚠️ Kısmen |
-| **1.21.5** | **15** | ✅ **Tam Uyumlu** |
-
-## 💡 Öneriler
-
-### 1. Performans İyileştirmeleri
-- ✅ Texture dosyalarını **16x16 PNG** olarak kullanın
-- ✅ **Item klasör yapısını** doğru oluşturun
-- ✅ **Model data range'i** 1000-9999 arası kullanın
-
-### 2. Best Practices
-- ✅ **Test komutu** ile her item'i kontrol edin
-- ✅ **Backup** alın (`/ui backup`)
-- ✅ **Resource pack'i** düzenli güncelleyin
-
-### 3. Troubleshooting
-- ❗ **Client cache** temizleyin (F3+T)
-- ❗ **Server restart** yapın
-- ❗ **Player resource pack** durumunu kontrol edin
-
-## 🎯 Sonuç
-
-Bu güncelleme ile **1.21.5 Minecraft** sürümünde:
-
-✅ **Texture Assignment** tamamen çalışır  
-✅ **Custom Model Data** doğru assign edilir  
-✅ **Resource Pack** format uyumlu olur  
-✅ **Performance** optimize edilir  
-✅ **Debug Tools** ile kolay troubleshooting  
-
-**Tüm değişiklikler backward compatible'dır** ve eski item'ler otomatik olarak yeni sisteme geçer.
-
----
+Launcher otomatik güncelleme yapar:
+1. Her açılışta JSON'dan versiyon kontrol edilir
+2. Yeni versiyon varsa otomatik güncelleme başlar
+3. Config ve mods temizlenir, yeniden indirilir
 
 ## 📞 Destek
 
-Sorun yaşarsan:
-1. **Test komutu** kullan: `/ui test <item_id>`
-2. **Debug mode** aç: `/ui debug on`
-3. **Log dosyalarını** kontrol et
-4. **Resource pack'i** yeniden oluştur: `/ui pack regenerate`
+TerraMonic sunucusu için:
+- Website: https://www.terramonic.com
+- Discord: [TerraMonic Discord]
+
+## 📄 Lisans
+
+Bu proje TerraMonic sunucusu için özel olarak geliştirilmiştir.
+
+---
+
+**Not**: Bu launcher Minecraft 1.21.5 ve Fabric 0.16.14 için optimize edilmiştir. Diğer versiyonlar için kod değişiklikleri gerekebilir.
