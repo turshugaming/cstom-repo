@@ -144,17 +144,29 @@ Launcher şu özellikleri destekler:
 
 ### Yaygın Sorunlar
 
-1. **"Launcher config yüklenemedi"**
-   - JSON URL'inin doğru olduğunu kontrol edin
-   - Internet bağlantınızı kontrol edin
+1. **"❌ JSON Yüklenemedi"**
+   - `launcher.json` dosyasının proje klasöründe olduğunu kontrol edin
+   - JSON formatının doğru olduğunu kontrol edin (https://jsonlint.com)
+   - Console'da detaylı hata mesajlarını kontrol edin
 
-2. **"Fabric kurulumu başarısız"**
+2. **"Modrinth pack URL bulunamadı"**
+   - JSON'da `modrinth_pack` field'ının mevcut olduğunu kontrol edin
+   - Console'da `🔍 JSON field kontrolleri` loglarını inceleyin
+
+3. **"Fabric kurulumu başarısız"**
    - Java 11+ kurulu olduğunu kontrol edin
    - Antivirus yazılımının engellediğini kontrol edin
 
-3. **"Modrinth pack kurulumu başarısız"**
+4. **"Modrinth pack kurulumu başarısız"**
    - Modrinth pack URL'inin geçerli olduğunu kontrol edin
    - Yeterli disk alanınız olduğunu kontrol edin
+
+### Debug Logları
+Artık launcher detaylı debug bilgileri veriyor:
+- 🔄 = İşlem başlıyor
+- ✅ = Başarılı
+- ❌ = Hatalı
+- ⚠️ = Uyarı
 
 ### Log Dosyaları
 Tüm işlemler console'a yazdırılır. Hata ayıklama için console çıktısını kontrol edin.

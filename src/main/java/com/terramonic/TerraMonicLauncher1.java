@@ -333,8 +333,21 @@ public class TerraMonicLauncher1 extends Application {
         Task<JSONObject> configTask = new Task<>() {
             @Override
             protected JSONObject call() throws Exception {
+                System.out.println("🔄 JSON yükleniyor: " + LAUNCHER_JSON_URL);
                 String configContent = readJsonFromUrl(LAUNCHER_JSON_URL);
-                return new JSONObject(configContent);
+                System.out.println("✅ JSON content okudu, uzunluk: " + configContent.length());
+                System.out.println("📄 JSON preview: " + configContent.substring(0, Math.min(100, configContent.length())) + "...");
+                JSONObject jsonObj = new JSONObject(configContent);
+                System.out.println("✅ JSON parse edildi!");
+                
+                // JSON field'larını kontrol et
+                System.out.println("🔍 JSON field kontrolleri:");
+                System.out.println("   - version: " + (jsonObj.has("version") ? jsonObj.getString("version") : "❌ YOK"));
+                System.out.println("   - modrinth_pack: " + (jsonObj.has("modrinth_pack") ? "✅ VAR" : "❌ YOK"));
+                System.out.println("   - dosyalar: " + (jsonObj.has("dosyalar") ? "✅ VAR" : "❌ YOK"));
+                System.out.println("   - haberler: " + (jsonObj.has("haberler") ? jsonObj.getJSONArray("haberler").length() + " adet" : "❌ YOK"));
+                
+                return jsonObj;
             }
         };
 
@@ -378,12 +391,20 @@ public class TerraMonicLauncher1 extends Application {
         });
 
         configTask.setOnFailed(event -> {
-            System.out.println("Launcher config yüklenemedi: " + event.getSource().getException().getMessage());
+            Throwable exception = event.getSource().getException();
+            System.out.println("❌ Launcher config yüklenemedi!");
+            System.out.println("📁 Dosya yolu: " + LAUNCHER_JSON_URL);
+            System.out.println("💥 Hata detayı: " + exception.getClass().getSimpleName() + " - " + exception.getMessage());
+            
+            if (exception.getCause() != null) {
+                System.out.println("🔗 Sebep: " + exception.getCause().getClass().getSimpleName() + " - " + exception.getCause().getMessage());
+            }
+            
             // Fallback haberler
             newsList.clear();
             newsList.add(new NewsItem(
-                    "Hata - JSON Yüklenemedi",
-                    "launcher.json dosyası okunamadı. URL'yi kontrol edin veya dosyanın mevcut olduğundan emin olun.",
+                    "❌ JSON Yüklenemedi",
+                    "launcher.json dosyası okunamadı. Dosya yolu: " + LAUNCHER_JSON_URL.replace("file:///", "") + "\n\nHata: " + exception.getMessage(),
                     "N/A",
                     NewsItemType.GENEL
             ));
@@ -400,12 +421,12 @@ public class TerraMonicLauncher1 extends Application {
                             if (centerPanel != null) {
                                 centerPanel.getChildren().clear();
                                 centerPanel.getChildren().add(createNewsPanel());
-                                System.out.println("Fallback haberler gösterildi!");
+                                System.out.println("✅ Fallback haberler gösterildi!");
                             }
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println("Fallback haber refresh hatası: " + e.getMessage());
+                    System.out.println("❌ Fallback haber refresh hatası: " + e.getMessage());
                 }
             });
         });
@@ -540,20 +561,41 @@ public class TerraMonicLauncher1 extends Application {
      * Modrinth mod paketini indirir ve yükler
      */
     private void downloadAndInstallModrinthPack() {
-        if (launcherConfig == null || !launcherConfig.has("modrinth_pack")) {
-            System.out.println("Modrinth pack URL bulunamadı");
+        System.out.println("🔄 Modrinth pack kontrolü başlıyor...");
+        System.out.println("   - launcherConfig null mu? " + (launcherConfig == null ? "❌ EVET" : "✅ HAYIR"));
+        
+        if (launcherConfig == null) {
+            System.out.println("❌ LauncherConfig null - Modrinth pack yüklenemez");
             return;
         }
+        
+        System.out.println("   - modrinth_pack field var mı? " + (launcherConfig.has("modrinth_pack") ? "✅ VAR" : "❌ YOK"));
+        
+        if (!launcherConfig.has("modrinth_pack")) {
+            System.out.println("❌ JSON'da modrinth_pack field'ı bulunamadı!");
+            System.out.println("📋 Mevcut JSON field'ları:");
+            for (String key : launcherConfig.keySet()) {
+                System.out.println("   - " + key);
+            }
+            return;
+        }
+        
+        String modrinthUrl = launcherConfig.getString("modrinth_pack");
+        System.out.println("✅ Modrinth pack URL bulundu: " + modrinthUrl);
         
         Task<Void> modrinthTask = new Task<>() {
             @Override
             protected Void call() throws Exception {
                 String modrinthUrl = launcherConfig.getString("modrinth_pack");
+                System.out.println("🚀 Modrinth task başlıyor...");
+                System.out.println("📥 İndirilecek URL: " + modrinthUrl);
                 Platform.runLater(() -> statusLabel.setText("Modrinth pack indiriliyor..."));
                 
                 // .mrpack dosyasını indir
                 Path mrpackPath = TERRAMONIC_PATH.resolve("terramonic_modpack.mrpack");
+                System.out.println("📁 Mrpack dosyası indiriliyor: " + mrpackPath);
                 downloadFile(modrinthUrl, mrpackPath);
+                System.out.println("✅ Mrpack dosyası indirildi!");
                 
                 Platform.runLater(() -> statusLabel.setText("Modrinth pack çıkarılıyor..."));
                 
@@ -569,30 +611,46 @@ public class TerraMonicLauncher1 extends Application {
                 
                 // modrinth.index.json'u oku
                 Path indexPath = tempExtractDir.resolve("modrinth.index.json");
+                System.out.println("📋 Index dosyası aranıyor: " + indexPath);
                 if (!Files.exists(indexPath)) {
+                    System.out.println("❌ modrinth.index.json bulunamadı!");
+                    System.out.println("📁 Temp klasör içeriği:");
+                    try {
+                        Files.list(tempExtractDir).forEach(p -> System.out.println("   - " + p.getFileName()));
+                    } catch (IOException e) {
+                        System.out.println("   - Klasör listelenemedi: " + e.getMessage());
+                    }
                     throw new IOException("modrinth.index.json bulunamadı!");
                 }
+                System.out.println("✅ Index dosyası bulundu!");
                 
                 String indexContent = Files.readString(indexPath);
+                System.out.println("📄 Index dosyası okundu, uzunluk: " + indexContent.length());
                 JSONObject indexJson = new JSONObject(indexContent);
+                System.out.println("✅ Index JSON parse edildi!");
                 
                 Platform.runLater(() -> statusLabel.setText("Modlar indiriliyor..."));
                 
                 // Mods klasörünü temizle
                 Path modsDir = TERRAMONIC_PATH.resolve("mods");
+                System.out.println("🗂️ Mods klasörü temizleniyor: " + modsDir);
                 if (Files.exists(modsDir)) {
                     deleteDirectory(modsDir);
                 }
                 Files.createDirectories(modsDir);
+                System.out.println("✅ Mods klasörü hazırlandı!");
                 
                 // Her mod dosyasını indir
                 JSONArray files = indexJson.getJSONArray("files");
+                System.out.println("📦 Toplam dosya sayısı: " + files.length());
+                int modCount = 0;
                 for (int i = 0; i < files.length(); i++) {
                     JSONObject fileObj = files.getJSONObject(i);
                     String filePath = fileObj.getString("path");
                     
                     // Sadece mods klasöründeki dosyaları işle
                     if (filePath.startsWith("mods/")) {
+                        modCount++;
                         JSONArray downloads = fileObj.getJSONArray("downloads");
                         if (downloads.length() > 0) {
                             String downloadUrl = downloads.getString(0);
@@ -600,27 +658,43 @@ public class TerraMonicLauncher1 extends Application {
                             Path targetPath = modsDir.resolve(fileName);
                             
                             Platform.runLater(() -> statusLabel.setText("İndiriliyor: " + fileName));
+                            System.out.println("📥 [" + modCount + "] İndiriliyor: " + fileName);
                             downloadFile(downloadUrl, targetPath);
-                            
-                            System.out.println("İndirildi: " + fileName);
+                            System.out.println("✅ [" + modCount + "] İndirildi: " + fileName);
+                        } else {
+                            System.out.println("⚠️ [" + modCount + "] Download URL bulunamadı: " + filePath);
                         }
+                    } else {
+                        System.out.println("⏭️ Mod olmayan dosya atlanıyor: " + filePath);
                     }
                 }
+                System.out.println("🎉 Toplam " + modCount + " mod indirildi!");
                 
                 // Temizlik
+                System.out.println("🧹 Geçici dosyalar temizleniyor...");
                 deleteDirectory(tempExtractDir);
                 Files.deleteIfExists(mrpackPath);
+                System.out.println("✅ Temizlik tamamlandı!");
                 
                 Platform.runLater(() -> statusLabel.setText("Modrinth pack kurulumu tamamlandı!"));
+                System.out.println("🎊 Modrinth pack kurulumu başarıyla tamamlandı!");
                 
                 return null;
             }
         };
 
         modrinthTask.setOnFailed(event -> {
+            Throwable exception = event.getSource().getException();
+            System.out.println("❌ Modrinth pack kurulumu başarısız!");
+            System.out.println("💥 Hata detayı: " + exception.getClass().getSimpleName() + " - " + exception.getMessage());
+            if (exception.getCause() != null) {
+                System.out.println("🔗 Sebep: " + exception.getCause().getMessage());
+            }
+            exception.printStackTrace();
+            
             Platform.runLater(() -> {
                 statusLabel.setText("Modrinth pack kurulumu başarısız!");
-                showError("Modrinth pack kurulumu başarısız: " + event.getSource().getException().getMessage());
+                showError("Modrinth pack kurulumu başarısız:\n\n" + exception.getClass().getSimpleName() + ": " + exception.getMessage());
             });
         });
 
@@ -920,12 +994,29 @@ public class TerraMonicLauncher1 extends Application {
                 Platform.runLater(() -> loadingLabel.setText("Dosyalar kontrol ediliyor..."));
 
                 // ESKİ SİSTEM KORUNDU - dosyalar.json kullanımı
-                if (launcherConfig != null && launcherConfig.has("dosyalar")) {
-                    String zipUrl = launcherConfig.getString("dosyalar");
+                System.out.println("🔄 Dosyalar kontrolü:");
+                System.out.println("   - launcherConfig null mu? " + (launcherConfig == null ? "❌ EVET" : "✅ HAYIR"));
+                if (launcherConfig != null) {
+                    System.out.println("   - dosyalar field var mı? " + (launcherConfig.has("dosyalar") ? "✅ VAR" : "❌ YOK"));
                     
-                    // ZIP dosyasını indir ve .terramonic'e çıkar
-                    Platform.runLater(() -> loadingLabel.setText("Dosyalar indiriliyor ve çıkarılıyor..."));
-                    downloadAndExtractZip(zipUrl, TERRAMONIC_PATH);
+                    if (launcherConfig.has("dosyalar")) {
+                        String zipUrl = launcherConfig.getString("dosyalar");
+                        System.out.println("✅ Dosyalar URL bulundu: " + zipUrl);
+                        
+                        // ZIP dosyasını indir ve .terramonic'e çıkar
+                        Platform.runLater(() -> loadingLabel.setText("Dosyalar indiriliyor ve çıkarılıyor..."));
+                        
+                        // Sadece geçerli URL'lerde download yap
+                        if (!zipUrl.contains("placeholder")) {
+                            downloadAndExtractZip(zipUrl, TERRAMONIC_PATH);
+                        } else {
+                            System.out.println("⚠️ Dosyalar URL'i placeholder - download atlanıyor");
+                        }
+                    } else {
+                        System.out.println("⚠️ dosyalar field JSON'da bulunamadı - download atlanıyor");
+                    }
+                } else {
+                    System.out.println("❌ launcherConfig null - dosyalar download edilemez");
                 }
 
                 Platform.runLater(() -> loadingLabel.setText("Fabric kurulumu kontrol ediliyor..."));
@@ -941,6 +1032,7 @@ public class TerraMonicLauncher1 extends Application {
                 Platform.runLater(() -> loadingLabel.setText("Modrinth modları kontrol ediliyor..."));
 
                 // Modrinth modlarını indir
+                System.out.println("🔄 Modrinth pack download başlatılıyor...");
                 downloadAndInstallModrinthPack();
 
                 return null;
@@ -1004,8 +1096,16 @@ public class TerraMonicLauncher1 extends Application {
         });
 
         setupTask.setOnFailed(e -> {
+            Throwable exception = e.getSource().getException();
+            System.out.println("❌ Setup task başarısız!");
+            System.out.println("💥 Hata detayı: " + exception.getClass().getSimpleName() + " - " + exception.getMessage());
+            if (exception.getCause() != null) {
+                System.out.println("🔗 Sebep: " + exception.getCause().getMessage());
+            }
+            exception.printStackTrace();
+            
             Platform.runLater(() -> {
-                showError("Kurulum başarısız: " + e.getSource().getException().getMessage());
+                showError("Kurulum başarısız:\n\n" + exception.getClass().getSimpleName() + ": " + exception.getMessage());
                 loadingLabel.setText("Hata oluştu!");
             });
         });
