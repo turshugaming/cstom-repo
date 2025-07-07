@@ -2808,4 +2808,25 @@ public class TerraMonicLauncher1 extends Application {
             return icon;
         }
     }
+
+    /**
+     * Kaynak klasörünü hedefe kopyalar (alt klasörler dahil)
+     */
+    private void copyDirectoryRecursive(Path source, Path target) throws IOException {
+        if (!Files.exists(source)) return;
+        Files.walk(source).forEach(path -> {
+            try {
+                Path relative = source.relativize(path);
+                Path dest = target.resolve(relative);
+                if (Files.isDirectory(path)) {
+                    Files.createDirectories(dest);
+                } else {
+                    Files.createDirectories(dest.getParent());
+                    Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                System.out.println("Kopyalama hatası: " + e.getMessage());
+            }
+        });
+    }
 }
