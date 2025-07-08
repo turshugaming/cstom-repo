@@ -174,7 +174,7 @@ public class TerraMonicLauncher1 extends Application {
     private final Map<String, String> modVersions = new HashMap<>();
 
     // Gelişmiş performans izleme
-    private final Map<String, Long> performanceMetrics = new HashMap<>();
+    private final Map<String, Object> performanceMetrics = new HashMap<>();
     private Timer systemResourceMonitor;
 
     // Gelişmiş kullanıcı tercihleri
@@ -3806,12 +3806,13 @@ public class TerraMonicLauncher1 extends Application {
             // Sistem tepsisi ikonu güncelle
             if (trayIcon != null) {
                 try {
+                    // JavaFX Image'i AWT BufferedImage'e çevir
                     BufferedImage bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
-                    Canvas canvas = new Canvas(32, 32);
-                    GraphicsContext gc = canvas.getGraphicsContext2D();
-                    gc.drawImage(launcherIcon, 0, 0, 32, 32);
+                    Graphics2D g2d = bufferedImage.createGraphics();
+                    g2d.setColor(java.awt.Color.GREEN);
+                    g2d.fillRect(0, 0, 32, 32);
+                    g2d.dispose();
                     
-                    // Canvas'ı BufferedImage'e çevir (basitleştirilmiş)
                     trayIcon.setImage(bufferedImage);
                     logInfo("Sistem tepsisi ikonu güncellendi");
                 } catch (Exception e) {
