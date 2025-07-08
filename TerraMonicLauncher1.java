@@ -439,6 +439,13 @@ public class TerraMonicLauncher1 extends Application {
             {"net/java/dev/jna", "jna-platform", "5.16.0"},
               {"com/mojang", "jtracy", "1.0.29"},
               {"com/ibm/icu", "icu4j", "75.1"},
+              // ... within slf4jLibraries initialization, LWJGL listinin hemen altına ekle
+              {"org/lwjgl", "lwjgl-openal", "3.3.6"},
+              {"org/lwjgl", "lwjgl-openal", "3.3.6", "natives-windows"},
+              {"org/lwjgl", "lwjgl-openal", "3.3.6", "natives-linux"},
+              {"org/lwjgl", "lwjgl-openal", "3.3.6", "natives-macos"},
+              // Apache Commons Codec – Sodium parmak izi için
+              {"commons-codec", "commons-codec", "1.18.0"},
         };
         
         for (String[] lib : slf4jLibraries) {
@@ -542,13 +549,25 @@ public class TerraMonicLauncher1 extends Application {
 
         System.out.println("🖥️ Platform tespit edildi: " + platform);
         
-        String[] lwjglModules = {"lwjgl", "lwjgl-opengl", "lwjgl-glfw", "lwjgl-stb", "lwjgl-tinyfd"};
+        String[] lwjglModules = {"lwjgl", "lwjgl-opengl", "lwjgl-glfw", "lwjgl-stb", "lwjgl-tinyfd", "lwjgl-openal"};
         
         for (String module : lwjglModules) {
-            Path nativeJarPath = librariesDir.resolve("org/lwjgl")
-                    .resolve(module)
-                    .resolve("3.3.3")
-                    .resolve(module + "-3.3.3-" + platform + ".jar");
+            // 3.3.3 (diğer modüller) ve 3.3.6 (openal) sürümlerini sırayla dene
+            Path nativeJarPath = null;
+            for (String verToTry : new String[]{"3.3.3", "3.3.6"}) {
+                Path p = librariesDir.resolve("org/lwjgl")
+                        .resolve(module)
+                        .resolve(verToTry)
+                        .resolve(module + "-" + verToTry + "-" + platform + ".jar");
+                if (Files.exists(p)) {
+                    nativeJarPath = p;
+                    break;
+                }
+            }
+            if (nativeJarPath == null) {
+                System.out.println("⚠️ Native JAR bulunamadı (" + module + "): hiçbiri");
+                continue;
+            }
             
             if (Files.exists(nativeJarPath)) {
                 try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(nativeJarPath))) {
@@ -649,6 +668,9 @@ public class TerraMonicLauncher1 extends Application {
             {"net/java/dev/jna", "jna-platform", "5.16.0"},
               {"com/mojang", "jtracy", "1.0.29"},
               {"com/ibm/icu", "icu4j", "75.1"},
+              // ... essentialLibraries dizisine ekle
+              {"org/lwjgl", "lwjgl-openal", "3.3.6"},
+              {"commons-codec", "commons-codec", "1.18.0"},
         };
         
         for (String[] lib : essentialLibraries) {
