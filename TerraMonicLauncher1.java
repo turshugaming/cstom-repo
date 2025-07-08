@@ -438,6 +438,7 @@ public class TerraMonicLauncher1 extends Application {
             {"net/java/dev/jna", "jna", "5.16.0"},
             {"net/java/dev/jna", "jna-platform", "5.16.0"},
               {"com/mojang", "jtracy", "1.0.29"},
+              {"com/ibm/icu", "icu4j", "75.1"},
         };
         
         for (String[] lib : slf4jLibraries) {
@@ -647,6 +648,7 @@ public class TerraMonicLauncher1 extends Application {
             {"net/java/dev/jna", "jna", "5.16.0"},
             {"net/java/dev/jna", "jna-platform", "5.16.0"},
               {"com/mojang", "jtracy", "1.0.29"},
+              {"com/ibm/icu", "icu4j", "75.1"},
         };
         
         for (String[] lib : essentialLibraries) {
