@@ -376,9 +376,9 @@ public class TerraMonicLauncher1 extends Application {
      */
     private void downloadSLF4JLibraries(Path librariesDir) throws IOException {
         // SLF4J, LWJGL ve kritik kütüphaneler (modlar için gerekli)
-        String[][] slf4jLibraries = {
-            {"org/slf4j", "slf4j-api", "2.0.13"},
-            {"org/slf4j", "slf4j-nop", "2.0.13"},
+                  String[][] slf4jLibraries = {
+              {"org/slf4j", "slf4j-api", "2.0.13"},
+              // slf4j-nop kaldırıldı - çakışmayı önlemek için
             {"org/lwjgl", "lwjgl", "3.3.3"},
             {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
             {"org/lwjgl", "lwjgl-glfw", "3.3.3"},
@@ -663,9 +663,25 @@ public class TerraMonicLauncher1 extends Application {
                     // YENİ: KnotClient ile Java command oluştur
                     List<String> command = new ArrayList<>();
                     command.add("java");
+                    // RAM ve performans ayarları
                     command.add("-Xmx" + ramAmount);
                     command.add("-Xms1G");
+                    // Modern JVM uyumluluk ayarları
+                    command.add("--enable-native-access=ALL-UNNAMED");
+                    command.add("--add-opens");
+                    command.add("java.base/java.lang=ALL-UNNAMED");
+                    command.add("--add-opens");
+                    command.add("java.base/java.util=ALL-UNNAMED");
+                    command.add("--add-opens");
+                    command.add("java.base/java.io=ALL-UNNAMED");
+                    // SLF4J çakışmasını önle
+                    command.add("-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN");
+                    command.add("-Dlog4j2.formatMsgNoLookups=true");
+                    // LWJGL ve Minecraft ayarları
                     command.add("-Djava.library.path=" + TERRAMONIC_PATH.resolve("natives").toString());
+                    command.add("-Dminecraft.launcher.brand=TerraMonic");
+                    command.add("-Dminecraft.launcher.version=1.0.2");
+                    // Classpath
                     command.add("-cp");
                     command.add(classpath.toString());
                     command.add("net.fabricmc.loader.impl.launch.knot.KnotClient"); // YENİ: KnotClient
