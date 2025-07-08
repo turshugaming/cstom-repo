@@ -723,19 +723,20 @@ public class TerraMonicLauncher1 extends Application {
                     // YENİ: İLK ÖNCE SLF4J VE LWJGL KÜTÜPHANELERİNİ EKLE
                     addEssentialLibrariesToClasspath(classpath, librariesDir);
 
-                    // JTRACE STUB: Çalışan launcher JAR'ında bulunan TracyClient/Zone sınıflarını oyun classpath'ine ekle
+                    // JTRACE STUB: Çalışan launcher'ın sınıf dosyalarını classpath'e ekle
                     try {
-                        java.nio.file.Path launcherJar = java.nio.file.Paths.get(TerraMonicLauncher1.class.getProtectionDomain()
-                                .getCodeSource().getLocation().toURI());
-                        if (java.nio.file.Files.exists(launcherJar) && launcherJar.toString().endsWith(".jar")) {
+                        java.net.URL codeSource = TerraMonicLauncher1.class.getProtectionDomain()
+                                .getCodeSource().getLocation();
+                        java.nio.file.Path launcherPath = java.nio.file.Paths.get(codeSource.toURI());
+                        if (java.nio.file.Files.exists(launcherPath)) {
                             if (classpath.length() > 0) {
                                 classpath.append(";");
                             }
-                            classpath.append(launcherJar.toString());
-                            System.out.println("✅ Launcher JAR classpath'e eklendi (JTrace stubları için)");
+                            classpath.append(launcherPath.toString());
+                            System.out.println("✅ Launcher sınıfları classpath'e eklendi (JTrace stubları için): " + launcherPath);
                         }
                     } catch (Exception ex) {
-                        System.out.println("⚠️ Launcher JAR yolu alınamadı: " + ex.getMessage());
+                        System.out.println("⚠️ Launcher sınıf yolu alınamadı: " + ex.getMessage());
                     }
                     
                     // Fabric JSON'dan library'leri oku
