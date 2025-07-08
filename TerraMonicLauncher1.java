@@ -792,6 +792,9 @@ public class TerraMonicLauncher1 extends Application {
                     // SLF4J çakışmasını önle
                     command.add("-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN");
                     command.add("-Dlog4j2.formatMsgNoLookups=true");
+                    // JTrace profiling'i devre dışı bırak (eksik kütüphane sorunu için)
+                    command.add("-Dcom.mojang.jtracy.disable=true");
+                    command.add("-Dmojang.tracy.enabled=false");
                     // LWJGL ayarı - modern LWJGL 3.3.3 için optimize
                     command.add("-Dorg.lwjgl.librarypath=" + TERRAMONIC_PATH.resolve("natives").toString());
                     // Minecraft launcher ayarları
