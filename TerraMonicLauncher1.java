@@ -438,7 +438,7 @@ public class TerraMonicLauncher1 extends Application {
             
             // Maven path oluştur
             String fileName = classifier != null ? 
-                artifactId + "-" + version + "-natives-" + classifier + ".jar" :
+                artifactId + "-" + version + "-" + classifier + ".jar" :
                 artifactId + "-" + version + ".jar";
                 
             Path libPath = librariesDir.resolve(groupPath)
@@ -461,10 +461,18 @@ public class TerraMonicLauncher1 extends Application {
                 } catch (IOException e) {
                     System.out.println("⚠️ Kütüphane indirilemedi: " + fileName + " - " + e.getMessage());
                     
-                    // Alternatif URL dene (JCenter)
+                    // Alternatif URL dene (Mojang için özel)
                     try {
-                        String alternativeUrl = "https://jcenter.bintray.com/" + 
-                            groupPath + "/" + artifactId + "/" + version + "/" + fileName;
+                        String alternativeUrl;
+                        if (groupPath.startsWith("com/mojang")) {
+                            // Mojang libraries için özel URL
+                            alternativeUrl = "https://libraries.minecraft.net/" + 
+                                groupPath + "/" + artifactId + "/" + version + "/" + fileName;
+                        } else {
+                            // Diğer kütüphaneler için JCenter
+                            alternativeUrl = "https://jcenter.bintray.com/" + 
+                                groupPath + "/" + artifactId + "/" + version + "/" + fileName;
+                        }
                         downloadFile(alternativeUrl, libPath);
                         System.out.println("✅ Alternative URL'den indirildi: " + fileName);
                     } catch (IOException e2) {
