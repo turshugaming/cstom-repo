@@ -3586,4 +3586,41 @@ public class TerraMonicLauncher1 extends Application {
             return icon;
         }
     }
+
+    /**
+     * JTrace stub (TracyClient/Zone) sınıflarını içeren küçük bir JAR oluşturur ve
+     * libraries/com/mojang/jtracy/0.1.0/ dizinine yerleştirir.
+     */
+    private Path ensureJTraceStub(Path librariesDir) {
+        Path stubJarPath = librariesDir.resolve("com/mojang/jtracy/0.1.0/jtracy-0.1.0.jar");
+        try {
+            if (java.nio.file.Files.exists(stubJarPath)) return stubJarPath;
+            java.nio.file.Files.createDirectories(stubJarPath.getParent());
+
+            // Kaynak .class dosyalarını bul
+            String base = "/com/mojang/jtracy/";
+            java.net.URL zoneRes = TerraMonicLauncher1.class.getResource(base + "Zone.class");
+            java.net.URL tracyRes = TerraMonicLauncher1.class.getResource(base + "TracyClient.class");
+            if (zoneRes == null || tracyRes == null) {
+                System.out.println("⚠️ JTrace stub sınıfları bulunamadı, JAR oluşturulamadı");
+                return null;
+            }
+            try (java.util.jar.JarOutputStream jos = new java.util.jar.JarOutputStream(java.nio.file.Files.newOutputStream(stubJarPath))) {
+                // Helper lambda
+                java.util.function.BiConsumer<java.net.URL,String> addEntry = (url, entryName) -> {
+                    try (java.io.InputStream in = url.openStream()) {
+                        jos.putNextEntry(new java.util.jar.JarEntry(entryName));
+                        in.transferTo(jos);
+                        jos.closeEntry();
+                    } catch (Exception e) { /* ignore */ }
+                };
+                addEntry.accept(zoneRes, "com/mojang/jtracy/Zone.class");
+                addEntry.accept(tracyRes, "com/mojang/jtracy/TracyClient.class");
+            }
+            System.out.println("✅ JTrace stub JAR oluşturuldu: " + stubJarPath);
+        } catch (Exception ex) {
+            System.out.println("⚠️ JTrace stub JAR oluşturulamadı: " + ex.getMessage());
+        }
+        return stubJarPath;
+    }
 }
