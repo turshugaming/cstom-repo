@@ -397,6 +397,14 @@ public class TerraMonicLauncher1 extends Application {
             {"org/apache/commons", "commons-collections4", "4.4"},
             // Guava
             {"com/google/guava", "guava", "32.1.3-jre"},
+            // Netty - C2ME için kritik
+            {"io/netty", "netty-all", "4.1.109.Final"},
+            {"io/netty", "netty-common", "4.1.109.Final"},
+            {"io/netty", "netty-buffer", "4.1.109.Final"},
+            {"io/netty", "netty-transport", "4.1.109.Final"},
+            // Minecraft için gerekli ek kütüphaneler
+            {"com/google/code/gson", "gson", "2.10.1"},
+            {"commons-io", "commons-io", "2.15.1"},
             // Log4j
             {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
@@ -525,6 +533,14 @@ public class TerraMonicLauncher1 extends Application {
             {"org/apache/commons", "commons-collections4", "4.4"},
             // Guava
             {"com/google/guava", "guava", "32.1.3-jre"},
+            // Netty - C2ME için kritik
+            {"io/netty", "netty-all", "4.1.109.Final"},
+            {"io/netty", "netty-common", "4.1.109.Final"},
+            {"io/netty", "netty-buffer", "4.1.109.Final"},
+            {"io/netty", "netty-transport", "4.1.109.Final"},
+            // Minecraft için gerekli ek kütüphaneler
+            {"com/google/code/gson", "gson", "2.10.1"},
+            {"commons-io", "commons-io", "2.15.1"},
             // Log4j
             {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
