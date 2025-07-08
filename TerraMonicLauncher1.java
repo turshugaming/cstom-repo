@@ -409,6 +409,8 @@ public class TerraMonicLauncher1 extends Application {
               {"com/mojang", "brigadier", "1.0.18"},
               {"com/mojang", "datafixerupper", "8.0.16"},
               {"com/mojang", "authlib", "6.0.54"},
+              // JOML - Minecraft matematik kütüphanesi (kritik!)
+              {"org/joml", "joml", "1.10.8"},
               // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
@@ -608,6 +610,8 @@ public class TerraMonicLauncher1 extends Application {
               {"com/mojang", "brigadier", "1.0.18"},
               {"com/mojang", "datafixerupper", "8.0.16"},
               {"com/mojang", "authlib", "6.0.54"},
+              // JOML - Minecraft matematik kütüphanesi (kritik!)
+              {"org/joml", "joml", "1.10.8"},
               // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
