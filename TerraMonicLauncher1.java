@@ -3618,6 +3618,7 @@ public class TerraMonicLauncher1 extends Application {
 
                     int res = compiler.run(null, null, null,
                             "-g:none",
+                            "--release", "21",
                             "-classpath", System.getProperty("java.class.path"),
                             zoneFile.toString(), tracyFile.toString());
                     if (res != 0) {
