@@ -3608,22 +3608,67 @@ public class TerraMonicLauncher1 extends Application {
             java.net.URL zoneRes = TerraMonicLauncher1.class.getResource(base + "Zone.class");
             java.net.URL tracyRes = TerraMonicLauncher1.class.getResource(base + "TracyClient.class");
             if (zoneRes == null || tracyRes == null) {
-                System.out.println("⚠️ JTrace stub sınıfları bulunamadı, JAR oluşturulamadı");
-                return null;
+                // Derlenmiş sınıflar bulunamadıysa kaynaktan derle
+                try {
+                    javax.tools.JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
+                    if (compiler == null) {
+                        System.out.println("⚠️ JDK compiler not available, cannot compile JTrace stub");
+                        return null;
+                    }
+                    java.nio.file.Path tempSrcDir = java.nio.file.Files.createTempDirectory("jtracy_src");
+
+                    String zoneSrc = "package com.mojang.jtracy; public final class Zone implements AutoCloseable { public Zone(String name) {} @Override public void close() {} }";
+                    String tracySrc = "package com.mojang.jtracy; public final class TracyClient { private static boolean a=false; private TracyClient(){} public static boolean isActive(){return a;} public static void beginFrame(){} public static void endFrame(){} public static Zone zone(String n){return new Zone(n);} }";
+
+                    java.nio.file.Path zoneFile = tempSrcDir.resolve("Zone.java");
+                    java.nio.file.Path tracyFile = tempSrcDir.resolve("TracyClient.java");
+                    java.nio.file.Files.writeString(zoneFile, zoneSrc);
+                    java.nio.file.Files.writeString(tracyFile, tracySrc);
+
+                    int res = compiler.run(null, null, null,
+                            "-g:none",
+                            "-classpath", System.getProperty("java.class.path"),
+                            zoneFile.toString(), tracyFile.toString());
+                    if (res != 0) {
+                        System.out.println("⚠️ JTrace stub kaynak derleme başarısız, kod=" + res);
+                        return null;
+                    }
+
+                    // Derlenmiş sınıfların bulunduğu dizin tempSrcDir/com/mojang/jtracy/
+                    java.nio.file.Path zoneClass = tempSrcDir.resolve("com/mojang/jtracy/Zone.class");
+                    java.nio.file.Path tracyClass = tempSrcDir.resolve("com/mojang/jtracy/TracyClient.class");
+
+                    try (java.util.jar.JarOutputStream jos = new java.util.jar.JarOutputStream(java.nio.file.Files.newOutputStream(stubJarPath))) {
+                        java.util.function.BiConsumer<java.nio.file.Path,String> addEntry = (p, entryName) -> {
+                            try {
+                                jos.putNextEntry(new java.util.jar.JarEntry(entryName));
+                                java.nio.file.Files.copy(p, jos);
+                                jos.closeEntry();
+                            } catch (Exception ignore) {}
+                        };
+                        addEntry.accept(zoneClass, "com/mojang/jtracy/Zone.class");
+                        addEntry.accept(tracyClass, "com/mojang/jtracy/TracyClient.class");
+                    }
+                    System.out.println("✅ JTrace stub JAR derlenerek oluşturuldu: " + stubJarPath);
+                } catch (Exception ex2) {
+                    System.out.println("⚠️ JTrace stub derleme hatası: " + ex2.getMessage());
+                    return null;
+                }
+            } else {
+                // mevcut akış
+                try (java.util.jar.JarOutputStream jos = new java.util.jar.JarOutputStream(java.nio.file.Files.newOutputStream(stubJarPath))) {
+                    java.util.function.BiConsumer<java.net.URL,String> addEntry = (url, entryName) -> {
+                        try (java.io.InputStream in = url.openStream()) {
+                            jos.putNextEntry(new java.util.jar.JarEntry(entryName));
+                            in.transferTo(jos);
+                            jos.closeEntry();
+                        } catch (Exception e) { /* ignore */ }
+                    };
+                    addEntry.accept(zoneRes, "com/mojang/jtracy/Zone.class");
+                    addEntry.accept(tracyRes, "com/mojang/jtracy/TracyClient.class");
+                }
+                System.out.println("✅ JTrace stub JAR oluşturuldu: " + stubJarPath);
             }
-            try (java.util.jar.JarOutputStream jos = new java.util.jar.JarOutputStream(java.nio.file.Files.newOutputStream(stubJarPath))) {
-                // Helper lambda
-                java.util.function.BiConsumer<java.net.URL,String> addEntry = (url, entryName) -> {
-                    try (java.io.InputStream in = url.openStream()) {
-                        jos.putNextEntry(new java.util.jar.JarEntry(entryName));
-                        in.transferTo(jos);
-                        jos.closeEntry();
-                    } catch (Exception e) { /* ignore */ }
-                };
-                addEntry.accept(zoneRes, "com/mojang/jtracy/Zone.class");
-                addEntry.accept(tracyRes, "com/mojang/jtracy/TracyClient.class");
-            }
-            System.out.println("✅ JTrace stub JAR oluşturuldu: " + stubJarPath);
         } catch (Exception ex) {
             System.out.println("⚠️ JTrace stub JAR oluşturulamadı: " + ex.getMessage());
         }
