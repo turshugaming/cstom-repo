@@ -725,26 +725,17 @@ public class TerraMonicLauncher1 extends Application {
 
                     // JTrace stub JAR'ını üret
                     Path jtracyStubJar = ensureJTraceStub(librariesDir);
-                    
-                    // YENİ: İLK ÖNCE SLF4J VE LWJGL KÜTÜPHANELERİNİ EKLE
-                    addEssentialLibrariesToClasspath(classpath, librariesDir);
-
-                    // JTRACE STUB: Çalışan launcher'ın sınıf dosyalarını classpath'e ekle
-                    try {
-                        java.net.URL codeSource = TerraMonicLauncher1.class.getProtectionDomain()
-                                .getCodeSource().getLocation();
-                        java.nio.file.Path launcherPath = java.nio.file.Paths.get(codeSource.toURI());
-                        if (java.nio.file.Files.exists(launcherPath)) {
-                            if (classpath.length() > 0) {
-                                classpath.append(";");
-                            }
-                            classpath.append(launcherPath.toString());
-                            System.out.println("✅ Launcher sınıfları classpath'e eklendi (JTrace stubları için): " + launcherPath);
+                    if (jtracyStubJar != null && java.nio.file.Files.exists(jtracyStubJar)) {
+                        if (classpath.length() > 0) {
+                            classpath.append(";");
                         }
-                    } catch (Exception ex) {
-                        System.out.println("⚠️ Launcher sınıf yolu alınamadı: " + ex.getMessage());
+                        classpath.append(jtracyStubJar.toString());
+                        System.out.println("✅ JTrace stub JAR classpath'e eklendi: " + jtracyStubJar);
                     }
-                    
+
+                    // Gerekli temel kütüphaneleri ekle (tekrar çağrılmasına gerek yoktu)
+                    // addEssentialLibrariesToClasspath(classpath, librariesDir); // ← kaldırıldı
+
                     // Fabric JSON'dan library'leri oku
                     Path fabricJsonPath = fabricVersionDir.resolve(fabricVersionName + ".json");
                     if (Files.exists(fabricJsonPath)) {
