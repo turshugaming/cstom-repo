@@ -723,6 +723,12 @@ public class TerraMonicLauncher1 extends Application {
                     // YENİ: İLK ÖNCE SLF4J VE LWJGL KÜTÜPHANELERİNİ EKLE
                     addEssentialLibrariesToClasspath(classpath, librariesDir);
 
+                    // JTrace stub JAR'ını üret
+                    Path jtracyStubJar = ensureJTraceStub(librariesDir);
+                    
+                    // YENİ: İLK ÖNCE SLF4J VE LWJGL KÜTÜPHANELERİNİ EKLE
+                    addEssentialLibrariesToClasspath(classpath, librariesDir);
+
                     // JTRACE STUB: Çalışan launcher'ın sınıf dosyalarını classpath'e ekle
                     try {
                         java.net.URL codeSource = TerraMonicLauncher1.class.getProtectionDomain()
