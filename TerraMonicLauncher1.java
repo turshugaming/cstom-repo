@@ -3591,7 +3591,24 @@ public class TerraMonicLauncher1 extends Application {
     private Path ensureJTraceStub(Path librariesDir) {
         Path stubJarPath = librariesDir.resolve("com/mojang/jtracy/0.1.0/jtracy-0.1.0.jar");
         try {
-            if (java.nio.file.Files.exists(stubJarPath)) return stubJarPath;
+            if (java.nio.file.Files.exists(stubJarPath)) {
+                try (java.util.jar.JarFile jf = new java.util.jar.JarFile(stubJarPath.toFile())) {
+                    java.util.jar.JarEntry entry = jf.getJarEntry("com/mojang/jtracy/Zone.class");
+                    if (entry != null) {
+                        try (java.io.InputStream in = jf.getInputStream(entry)) {
+                            byte[] hdr = in.readNBytes(8); // magic + minor + major
+                            if (hdr.length == 8) {
+                                int major = ((hdr[6] & 0xFF) << 8) | (hdr[7] & 0xFF);
+                                if (major <= 65) { // Java 21 or lower
+                                    return stubJarPath; // mevcut jar uygun
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ignore) {}
+                // Uygun değilse sil ve yeniden oluştur
+                try { java.nio.file.Files.delete(stubJarPath); } catch (Exception ignore) {}
+            }
             java.nio.file.Files.createDirectories(stubJarPath.getParent());
 
             // Kaynak .class dosyalarını bul
