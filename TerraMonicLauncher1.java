@@ -446,6 +446,7 @@ public class TerraMonicLauncher1 extends Application {
               {"org/lwjgl", "lwjgl-openal", "3.3.6", "natives-macos"},
               // Apache Commons Codec – Sodium parmak izi için
               {"commons-codec", "commons-codec", "1.18.0"},
+              {"com/mojang", "text2speech", "1.17.9"},
         };
         
         for (String[] lib : slf4jLibraries) {
@@ -671,6 +672,7 @@ public class TerraMonicLauncher1 extends Application {
               // ... essentialLibraries dizisine ekle
               {"org/lwjgl", "lwjgl-openal", "3.3.6"},
               {"commons-codec", "commons-codec", "1.18.0"},
+              {"com/mojang", "text2speech", "1.17.9"},
         };
         
         for (String[] lib : essentialLibraries) {
