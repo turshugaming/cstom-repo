@@ -379,17 +379,17 @@ public class TerraMonicLauncher1 extends Application {
         String[][] slf4jLibraries = {
             {"org/slf4j", "slf4j-api", "2.0.13"},
             {"org/slf4j", "slf4j-nop", "2.0.13"},
-            {"org/lwjgl", "lwjgl", "3.3.1"},
-            {"org/lwjgl", "lwjgl-opengl", "3.3.1"},
-            {"org/lwjgl", "lwjgl-glfw", "3.3.1"},
-            {"org/lwjgl", "lwjgl-stb", "3.3.1"},
-            {"org/lwjgl", "lwjgl-tinyfd", "3.3.1"},
+            {"org/lwjgl", "lwjgl", "3.3.3"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.3"},
+            {"org/lwjgl", "lwjgl-stb", "3.3.3"},
+            {"org/lwjgl", "lwjgl-tinyfd", "3.3.3"},
             // Native DLL'ler için
-            {"org/lwjgl", "lwjgl", "3.3.1", "windows"},
-            {"org/lwjgl", "lwjgl-opengl", "3.3.1", "windows"},
-            {"org/lwjgl", "lwjgl-glfw", "3.3.1", "windows"},
-            {"org/lwjgl", "lwjgl-stb", "3.3.1", "windows"},
-            {"org/lwjgl", "lwjgl-tinyfd", "3.3.1", "windows"},
+            {"org/lwjgl", "lwjgl", "3.3.3", "windows"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.3", "windows"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.3", "windows"},
+            {"org/lwjgl", "lwjgl-stb", "3.3.3", "windows"},
+            {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "windows"},
             // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
