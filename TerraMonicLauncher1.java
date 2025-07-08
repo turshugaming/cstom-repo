@@ -431,7 +431,12 @@ public class TerraMonicLauncher1 extends Application {
             // Log4j
             {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
-            {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"}
+            {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"},
+            // OSHI - Hardware info for Minecraft
+            {"com/github/oshi", "oshi-core", "6.8.0"},
+            // JNA - Java Native Access for Windows/Linux/Mac native operations
+            {"net/java/dev/jna", "jna", "5.16.0"},
+            {"net/java/dev/jna", "jna-platform", "5.16.0"}
         };
         
         for (String[] lib : slf4jLibraries) {
@@ -634,7 +639,12 @@ public class TerraMonicLauncher1 extends Application {
             // Log4j
             {"org/apache/logging/log4j", "log4j-api", "2.22.1"},
             {"org/apache/logging/log4j", "log4j-core", "2.22.1"},
-            {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"}
+            {"org/apache/logging/log4j", "log4j-slf4j2-impl", "2.22.1"},
+            // OSHI - Hardware info for Minecraft
+            {"com/github/oshi", "oshi-core", "6.8.0"},
+            // JNA - Java Native Access for Windows/Linux/Mac native operations
+            {"net/java/dev/jna", "jna", "5.16.0"},
+            {"net/java/dev/jna", "jna-platform", "5.16.0"}
         };
         
         for (String[] lib : essentialLibraries) {
