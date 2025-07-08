@@ -398,13 +398,18 @@ public class TerraMonicLauncher1 extends Application {
               {"org/lwjgl", "lwjgl-glfw", "3.3.3", "natives-linux"},
               {"org/lwjgl", "lwjgl-stb", "3.3.3", "natives-linux"},
               {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "natives-linux"},
-              // Mac desteği
+                            // Mac desteği
               {"org/lwjgl", "lwjgl", "3.3.3", "natives-macos"},
               {"org/lwjgl", "lwjgl-opengl", "3.3.3", "natives-macos"},
               {"org/lwjgl", "lwjgl-glfw", "3.3.3", "natives-macos"},
               {"org/lwjgl", "lwjgl-stb", "3.3.3", "natives-macos"},
               {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "natives-macos"},
-            // Fastutil - modlar için kritik
+              // Mojang kütüphaneleri - Minecraft için kritik
+              {"com/mojang", "logging", "1.1.1"},
+              {"com/mojang", "brigadier", "1.0.18"},
+              {"com/mojang", "datafixerupper", "8.0.16"},
+              {"com/mojang", "authlib", "6.0.54"},
+              // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
             {"org/apache/commons", "commons-lang3", "3.14.0"},
@@ -478,6 +483,29 @@ public class TerraMonicLauncher1 extends Application {
     private void extractLWJGLNatives(Path librariesDir) throws IOException {
         System.out.println("🔧 LWJGL native'ları extract ediliyor...");
         Path nativesDir = TERRAMONIC_PATH.resolve("natives");
+        
+        // Önce eski native'ları temizle
+        if (Files.exists(nativesDir)) {
+            System.out.println("🧹 Eski native dosyalar temizleniyor...");
+            try {
+                Files.list(nativesDir)
+                    .filter(path -> {
+                        String fileName = path.toString().toLowerCase();
+                        return fileName.endsWith(".dll") || fileName.endsWith(".so") || fileName.endsWith(".dylib");
+                    })
+                    .forEach(path -> {
+                        try {
+                            Files.deleteIfExists(path);
+                            System.out.println("🗑️ Eski native silindi: " + path.getFileName());
+                        } catch (IOException e) {
+                            System.out.println("⚠️ Native silinemedi: " + path.getFileName());
+                        }
+                    });
+            } catch (IOException e) {
+                System.out.println("⚠️ Native klasörü temizlenemedi: " + e.getMessage());
+            }
+        }
+        
         Files.createDirectories(nativesDir);
         
         // Platform detection
@@ -559,15 +587,20 @@ public class TerraMonicLauncher1 extends Application {
         // SLF4J, LWJGL ve kritik kütüphaneler - modlar için
         String[][] essentialLibraries = {
             {"org/slf4j", "slf4j-api", "2.0.13"},
-            // JOptSimple - Minecraft için kritik
-            {"net/sf/jopt-simple", "jopt-simple", "5.0.4"},
-            // LWJGL 3.3.3 kütüphaneleri
-            {"org/lwjgl", "lwjgl", "3.3.3"},
-            {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
-            {"org/lwjgl", "lwjgl-glfw", "3.3.3"},
-            {"org/lwjgl", "lwjgl-stb", "3.3.3"},
-            {"org/lwjgl", "lwjgl-tinyfd", "3.3.3"},
-            // Fastutil - modlar için kritik
+                          // JOptSimple - Minecraft için kritik
+              {"net/sf/jopt-simple", "jopt-simple", "5.0.4"},
+              // LWJGL 3.3.3 kütüphaneleri
+              {"org/lwjgl", "lwjgl", "3.3.3"},
+              {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
+              {"org/lwjgl", "lwjgl-glfw", "3.3.3"},
+              {"org/lwjgl", "lwjgl-stb", "3.3.3"},
+              {"org/lwjgl", "lwjgl-tinyfd", "3.3.3"},
+              // Mojang kütüphaneleri - Minecraft için kritik
+              {"com/mojang", "logging", "1.1.1"},
+              {"com/mojang", "brigadier", "1.0.18"},
+              {"com/mojang", "datafixerupper", "8.0.16"},
+              {"com/mojang", "authlib", "6.0.54"},
+              // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
             {"org/apache/commons", "commons-lang3", "3.14.0"},
@@ -695,6 +728,21 @@ public class TerraMonicLauncher1 extends Application {
                         }
                     }
                     
+                    // Minecraft client JAR'ını da ekle
+                    Path minecraftClientPath = TERRAMONIC_PATH.resolve("versions")
+                        .resolve(MINECRAFT_VERSION)
+                        .resolve(MINECRAFT_VERSION + ".jar");
+                    
+                    if (Files.exists(minecraftClientPath)) {
+                        if (classpath.length() > 0) {
+                            classpath.append(";");
+                        }
+                        classpath.append(minecraftClientPath.toString());
+                        System.out.println("✅ Minecraft client JAR eklendi: " + MINECRAFT_VERSION + ".jar");
+                    } else {
+                        System.out.println("⚠️ Minecraft client JAR bulunamadı: " + minecraftClientPath);
+                    }
+                    
                     // Client JAR'ı classpath'e ekle
                     if (classpath.length() > 0) {
                         classpath.append(";");
@@ -718,8 +766,9 @@ public class TerraMonicLauncher1 extends Application {
                     // SLF4J çakışmasını önle
                     command.add("-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN");
                     command.add("-Dlog4j2.formatMsgNoLookups=true");
-                    // LWJGL ve Minecraft ayarları
-                    command.add("-Djava.library.path=" + TERRAMONIC_PATH.resolve("natives").toString());
+                    // LWJGL ayarı - modern LWJGL 3.3.3 için optimize
+                    command.add("-Dorg.lwjgl.librarypath=" + TERRAMONIC_PATH.resolve("natives").toString());
+                    // Minecraft launcher ayarları
                     command.add("-Dminecraft.launcher.brand=TerraMonic");
                     command.add("-Dminecraft.launcher.version=1.0.2");
                     // Classpath
