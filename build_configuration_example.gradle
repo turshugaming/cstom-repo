@@ -1,0 +1,217 @@
+// Gradle build file for TerraMonic Launcher
+// This shows how to properly structure the project with dependencies
+
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.beryx.jlink' version '3.0.1'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.terramonic'
+version = '1.0.2'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'Fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+}
+
+dependencies {
+    // JavaFX Controls (automatically managed by javafx plugin)
+    implementation 'org.openjfx:javafx-controls:17.0.2'
+    implementation 'org.openjfx:javafx-fxml:17.0.2'
+    
+    // JSON processing
+    implementation 'org.json:json:20231013'
+    
+    // HTTP client (modern alternative to URL.openConnection())
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    
+    // Logging framework
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
+    
+    // Configuration management
+    implementation 'com.typesafe:config:1.4.3'
+    
+    // File compression utilities
+    implementation 'org.apache.commons:commons-compress:1.25.0'
+    
+    // Testing dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.testfx:testfx-core:4.0.16-alpha'
+    testImplementation 'org.testfx:testfx-junit5:4.0.16-alpha'
+}
+
+javafx {
+    version = '17.0.2'
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+application {
+    mainClass = 'com.terramonic.TerraMonicLauncher'
+    applicationDefaultJvmArgs = [
+        '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+        '--add-opens', 'java.desktop/java.awt=ALL-UNNAMED',
+        '--add-opens', 'java.desktop/sun.awt=ALL-UNNAMED'
+    ]
+}
+
+// Configuration for creating native installers
+jlink {
+    imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'TerraMonic'
+        jvmArgs = [
+            '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-opens', 'java.desktop/java.awt=ALL-UNNAMED'
+        ]
+    }
+    
+    jpackage {
+        imageName = "TerraMonic Launcher"
+        installerName = "TerraMonic-Launcher"
+        appVersion = project.version
+        installerType = 'msi' // Windows installer
+        
+        if (org.gradle.internal.os.OperatingSystem.current().windows) {
+            installerOptions += [
+                '--win-per-user-install',
+                '--win-dir-chooser',
+                '--win-menu',
+                '--win-shortcut'
+            ]
+        }
+        
+        if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
+            installerType = 'dmg'
+            installerOptions += [
+                '--mac-package-name', 'TerraMonic Launcher'
+            ]
+        }
+        
+        if (org.gradle.internal.os.OperatingSystem.current().linux) {
+            installerType = 'deb'
+            installerOptions += [
+                '--linux-package-name', 'terramonic-launcher',
+                '--linux-app-category', 'games'
+            ]
+        }
+    }
+}
+
+// Create fat JAR with all dependencies
+shadowJar {
+    archiveBaseName = 'TerraMonic-Launcher'
+    archiveClassifier = 'all'
+    
+    manifest {
+        attributes(
+            'Main-Class': 'com.terramonic.TerraMonicLauncher',
+            'Implementation-Version': project.version,
+            'Implementation-Title': 'TerraMonic Launcher'
+        )
+    }
+    
+    // Exclude duplicate files
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    // Merge service files
+    mergeServiceFiles()
+}
+
+// Test configuration
+test {
+    useJUnitPlatform()
+    
+    // Run tests in headless mode for CI
+    systemProperty 'testfx.robot', 'glass'
+    systemProperty 'testfx.headless', 'true'
+    systemProperty 'prism.order', 'sw'
+    systemProperty 'prism.text', 't2k'
+    systemProperty 'java.awt.headless', 'true'
+}
+
+// Custom task to copy resources
+task copyResources(type: Copy) {
+    from 'src/main/resources'
+    into "${buildDir}/resources/main"
+}
+
+// Custom task to generate version info
+task generateVersionInfo {
+    doLast {
+        def versionFile = file("${buildDir}/resources/main/version.properties")
+        versionFile.parentFile.mkdirs()
+        versionFile.text = """
+# Generated version information
+version=${project.version}
+buildTime=${new Date().format('yyyy-MM-dd HH:mm:ss')}
+javaVersion=${System.getProperty('java.version')}
+        """.trim()
+    }
+}
+
+// Task dependencies
+processResources.dependsOn copyResources, generateVersionInfo
+
+// Custom task for security scanning (example)
+task securityScan {
+    doLast {
+        println "Running security scan..."
+        // Add OWASP dependency check or other security tools
+        println "Security scan completed"
+    }
+}
+
+// Code quality tasks
+task checkStyle(type: JavaExec) {
+    description = 'Run checkstyle code quality checks'
+    classpath = configurations.runtimeClasspath
+    main = 'com.puppycrawl.tools.checkstyle.Main'
+    args = ['-c', 'checkstyle.xml', 'src/main/java']
+}
+
+// Distribution tasks
+distributions {
+    main {
+        distributionBaseName = 'TerraMonic-Launcher'
+        contents {
+            from(shadowJar) {
+                rename { 'TerraMonic-Launcher.jar' }
+            }
+            from('README.md')
+            from('LICENSE')
+            into('bin') {
+                from('scripts/launcher.bat')
+                from('scripts/launcher.sh')
+                fileMode = 0755
+            }
+        }
+    }
+}
+
+// Wrapper configuration
+wrapper {
+    gradleVersion = '8.5'
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+// Build lifecycle hooks
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(':jpackage')) {
+        println "Building native installer for ${System.getProperty('os.name')}"
+    }
+}
+
+// Clean up task
+clean {
+    delete "${projectDir}/out"
+    delete "${projectDir}/build"
+}
