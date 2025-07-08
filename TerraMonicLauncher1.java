@@ -376,20 +376,34 @@ public class TerraMonicLauncher1 extends Application {
      */
     private void downloadSLF4JLibraries(Path librariesDir) throws IOException {
         // SLF4J, LWJGL ve kritik kütüphaneler (modlar için gerekli)
-                  String[][] slf4jLibraries = {
+                            String[][] slf4jLibraries = {
               {"org/slf4j", "slf4j-api", "2.0.13"},
-              // slf4j-nop kaldırıldı - çakışmayı önlemek için
-            {"org/lwjgl", "lwjgl", "3.3.3"},
+              // JOptSimple - Minecraft için gerekli
+              {"net/sf/jopt-simple", "jopt-simple", "5.0.4"},
+              // LWJGL 3.3.3 kütüphaneleri
+              {"org/lwjgl", "lwjgl", "3.3.3"},
             {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
             {"org/lwjgl", "lwjgl-glfw", "3.3.3"},
             {"org/lwjgl", "lwjgl-stb", "3.3.3"},
             {"org/lwjgl", "lwjgl-tinyfd", "3.3.3"},
-            // Native DLL'ler için
-            {"org/lwjgl", "lwjgl", "3.3.3", "windows"},
-            {"org/lwjgl", "lwjgl-opengl", "3.3.3", "windows"},
-            {"org/lwjgl", "lwjgl-glfw", "3.3.3", "windows"},
-            {"org/lwjgl", "lwjgl-stb", "3.3.3", "windows"},
-            {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "windows"},
+                          // Native DLL'ler için - platform specific
+              {"org/lwjgl", "lwjgl", "3.3.3", "natives-windows"},
+              {"org/lwjgl", "lwjgl-opengl", "3.3.3", "natives-windows"},
+              {"org/lwjgl", "lwjgl-glfw", "3.3.3", "natives-windows"},
+              {"org/lwjgl", "lwjgl-stb", "3.3.3", "natives-windows"},
+              {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "natives-windows"},
+              // Linux desteği
+              {"org/lwjgl", "lwjgl", "3.3.3", "natives-linux"},
+              {"org/lwjgl", "lwjgl-opengl", "3.3.3", "natives-linux"},
+              {"org/lwjgl", "lwjgl-glfw", "3.3.3", "natives-linux"},
+              {"org/lwjgl", "lwjgl-stb", "3.3.3", "natives-linux"},
+              {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "natives-linux"},
+              // Mac desteği
+              {"org/lwjgl", "lwjgl", "3.3.3", "natives-macos"},
+              {"org/lwjgl", "lwjgl-opengl", "3.3.3", "natives-macos"},
+              {"org/lwjgl", "lwjgl-glfw", "3.3.3", "natives-macos"},
+              {"org/lwjgl", "lwjgl-stb", "3.3.3", "natives-macos"},
+              {"org/lwjgl", "lwjgl-tinyfd", "3.3.3", "natives-macos"},
             // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
@@ -462,22 +476,44 @@ public class TerraMonicLauncher1 extends Application {
      * YENİ: LWJGL NATIVE DLL'LERİNİ ÇIKARIR
      */
     private void extractLWJGLNatives(Path librariesDir) throws IOException {
+        System.out.println("🔧 LWJGL native'ları extract ediliyor...");
         Path nativesDir = TERRAMONIC_PATH.resolve("natives");
         Files.createDirectories(nativesDir);
+        
+        // Platform detection
+        String osName = System.getProperty("os.name").toLowerCase();
+        String platform;
+        if (osName.contains("win")) {
+            platform = "natives-windows";
+        } else if (osName.contains("linux")) {
+            platform = "natives-linux";
+        } else if (osName.contains("mac")) {
+            platform = "natives-macos";
+        } else {
+            platform = "natives-windows"; // fallback
+        }
+
+        System.out.println("🖥️ Platform tespit edildi: " + platform);
         
         String[] lwjglModules = {"lwjgl", "lwjgl-opengl", "lwjgl-glfw", "lwjgl-stb", "lwjgl-tinyfd"};
         
         for (String module : lwjglModules) {
             Path nativeJarPath = librariesDir.resolve("org/lwjgl")
                     .resolve(module)
-                    .resolve("3.3.1")
-                    .resolve(module + "-3.3.1-natives-windows.jar");
+                    .resolve("3.3.3")
+                    .resolve(module + "-3.3.3-" + platform + ".jar");
             
             if (Files.exists(nativeJarPath)) {
                 try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(nativeJarPath))) {
                     ZipEntry entry;
                     while ((entry = zis.getNextEntry()) != null) {
-                        if (entry.getName().endsWith(".dll") && !entry.isDirectory()) {
+                        String entryName = entry.getName();
+                        // Platform specific native dosyaları
+                        boolean isNative = (entryName.endsWith(".dll") || 
+                                           entryName.endsWith(".so") || 
+                                           entryName.endsWith(".dylib")) && !entry.isDirectory();
+                        
+                        if (isNative) {
                             // Sadece dosya adını al, path bilgisini kaldır
                             String fileName = Paths.get(entry.getName()).getFileName().toString();
                             Path dllPath = nativesDir.resolve(fileName);
@@ -502,12 +538,15 @@ public class TerraMonicLauncher1 extends Application {
             }
         }
         
-        // Natives klasöründeki DLL'leri listele
+        // Natives klasöründeki native dosyaları listele
         try {
-            long dllCount = Files.list(nativesDir)
-                    .filter(path -> path.toString().endsWith(".dll"))
+            long nativeCount = Files.list(nativesDir)
+                    .filter(path -> {
+                        String fileName = path.toString().toLowerCase();
+                        return fileName.endsWith(".dll") || fileName.endsWith(".so") || fileName.endsWith(".dylib");
+                    })
                     .count();
-            System.out.println("📂 Toplam " + dllCount + " adet DLL dosyası natives klasöründe");
+            System.out.println("📂 Toplam " + nativeCount + " adet native dosya natives klasöründe");
         } catch (IOException e) {
             System.out.println("⚠️ Natives klasörü listelenemedi: " + e.getMessage());
         }
@@ -520,12 +559,14 @@ public class TerraMonicLauncher1 extends Application {
         // SLF4J, LWJGL ve kritik kütüphaneler - modlar için
         String[][] essentialLibraries = {
             {"org/slf4j", "slf4j-api", "2.0.13"},
-            {"org/slf4j", "slf4j-nop", "2.0.13"},
-            {"org/lwjgl", "lwjgl", "3.3.1"},
-            {"org/lwjgl", "lwjgl-opengl", "3.3.1"},
-            {"org/lwjgl", "lwjgl-glfw", "3.3.1"},
-            {"org/lwjgl", "lwjgl-stb", "3.3.1"},
-            {"org/lwjgl", "lwjgl-tinyfd", "3.3.1"},
+            // JOptSimple - Minecraft için kritik
+            {"net/sf/jopt-simple", "jopt-simple", "5.0.4"},
+            // LWJGL 3.3.3 kütüphaneleri
+            {"org/lwjgl", "lwjgl", "3.3.3"},
+            {"org/lwjgl", "lwjgl-opengl", "3.3.3"},
+            {"org/lwjgl", "lwjgl-glfw", "3.3.3"},
+            {"org/lwjgl", "lwjgl-stb", "3.3.3"},
+            {"org/lwjgl", "lwjgl-tinyfd", "3.3.3"},
             // Fastutil - modlar için kritik
             {"it/unimi/dsi", "fastutil", "8.5.13"},
             // Apache Commons
