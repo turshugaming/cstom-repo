@@ -1,47 +1,43 @@
 package com.mojang.jtracy;
 
 /**
- * JTrace kütüphanesinin gerektirdiği {@code com.mojang.jtracy.TracyClient}
- * sınıfının minimal/sahte (stub) sürümü.
- * <p>
- * Gerçek kütüphane oyun içi performans profilini Tracy aracıyla paylaşır.
- * Bu stub, yalnızca Minecraft başlatılırken sınıfların bulunmasını sağlar
- * ve hiçbir işlem yapmaz.
+ * Mojang'ın dahili JTrace profil aracına ait "{@code com.mojang.jtracy.TracyClient}"
+ * sınıfının işlevsiz (stub) sürümü.
+ * Oyunun yalnızca bu sınıfı ve metod imzalarını yükleyebilmesi yeterlidir.
  */
 public final class TracyClient {
 
     private static boolean active = false;
 
     private TracyClient() {
-        // kurucuya ihtiyaç yok (statik sınıf)
+        // Singleton benzeri kullanım, örnek oluşturulmaz
     }
 
     /**
-     * Gerçek uygulamada Tracy profilinin aktif olup olmadığını döner.
-     * Burada her zaman false.
+     * Profil kaydı aktif mi? Gerçek kütüphanede Tracy durumu kontrol edilir.
+     * Stub sürümünde her zaman {@code false} döner.
      */
     public static boolean isActive() {
         return active;
     }
 
     /**
-     * Çerçeve (frame) başlatıldığında çağrılır. İşlevsiz.
+     * Yeni kare başlangıcında çağrılır. İşlevsiz.
      */
     public static void beginFrame() {
         // no-op
     }
 
     /**
-     * Çerçeve (frame) bittiğinde çağrılır. İşlevsiz.
+     * Kare bitiminde çağrılır. İşlevsiz.
      */
     public static void endFrame() {
         // no-op
     }
 
     /**
-     * Profillenecek yeni bir bölge oluşturur.
-     * Gerçekte Tracy arayüzünde bir "zone" başlatır; burada yalnızca
-     * {@link Zone} nesnesi döndürülür.
+     * Profil kayıt bölgesi başlatır. Gerçek sürümde Tracy arayüzünde görünür.
+     * Burada yalnızca yeni bir {@link Zone} döndürülür.
      */
     public static Zone zone(String name) {
         return new Zone(name);

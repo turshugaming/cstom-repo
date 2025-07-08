@@ -722,6 +722,21 @@ public class TerraMonicLauncher1 extends Application {
                     
                     // YENİ: İLK ÖNCE SLF4J VE LWJGL KÜTÜPHANELERİNİ EKLE
                     addEssentialLibrariesToClasspath(classpath, librariesDir);
+
+                    // JTRACE STUB: Çalışan launcher JAR'ında bulunan TracyClient/Zone sınıflarını oyun classpath'ine ekle
+                    try {
+                        java.nio.file.Path launcherJar = java.nio.file.Paths.get(TerraMonicLauncher1.class.getProtectionDomain()
+                                .getCodeSource().getLocation().toURI());
+                        if (java.nio.file.Files.exists(launcherJar) && launcherJar.toString().endsWith(".jar")) {
+                            if (classpath.length() > 0) {
+                                classpath.append(";");
+                            }
+                            classpath.append(launcherJar.toString());
+                            System.out.println("✅ Launcher JAR classpath'e eklendi (JTrace stubları için)");
+                        }
+                    } catch (Exception ex) {
+                        System.out.println("⚠️ Launcher JAR yolu alınamadı: " + ex.getMessage());
+                    }
                     
                     // Fabric JSON'dan library'leri oku
                     Path fabricJsonPath = fabricVersionDir.resolve(fabricVersionName + ".json");
