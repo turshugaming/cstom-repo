@@ -63,6 +63,7 @@ import static javafx.scene.layout.GridPane.setVgrow;
  * Enhanced with Python-inspired parallel downloads and hash verification
  * 
  * @version 2.0
+ * @author TerraMonic Development Team
  */
 public class TerraMonicLauncher1 extends Application {
 
@@ -187,8 +188,9 @@ public class TerraMonicLauncher1 extends Application {
             Files.createDirectories(TERRAMONIC_PATH.resolve("assets/indexes"));
             Files.createDirectories(MODS_PROFILES_PATH);
             Files.createDirectories(ICON_PATH);
+            System.out.println("✅ TerraMonic folders created successfully");
         } catch (IOException e) {
-            System.out.println("Klasör oluşturma hatası: " + e.getMessage());
+            System.out.println("❌ Folder creation error: " + e.getMessage());
         }
     }
 
