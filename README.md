@@ -49,16 +49,26 @@ Aşağıdaki dosyaları `src/main/resources/com/terramonic/` klasörüne ekle:
 - `Gilroy-Bold.otf` - Font dosyası (opsiyonel)
 
 ### 3. Derleme ve Çalıştırma
+
+#### Windows
 ```bash
-# Bağımlılıkları indir
-mvn clean install
+# 🚀 TEK TIKLA ÇALIŞTIR
+launcher.bat
+```
 
-# Uygulamayı çalıştır
-mvn javafx:run
+#### Linux/Mac
+```bash
+# 🚀 TEK KOMUTLA ÇALIŞTIR
+./launcher.sh
+```
 
-# Veya JAR oluştur
+#### Manuel Çalıştırma
+```bash
+# Derleme ve çalıştırma
+mvn clean javafx:run
+
+# JAR oluşturmak için
 mvn clean package
-java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml -jar target/terramonic-launcher-1.0.0.jar
 ```
 
 ## � Kullanım

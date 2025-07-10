@@ -741,38 +741,110 @@ public class TerraMonicLauncher extends Application {
         statusLabel.setText("Oyun başlatılıyor...");
         statusLabel.setTextFill(Color.YELLOW);
         
-        try {
-            String username = nameField.getText().trim();
-            int ramMB = (int) (ramSlider.getValue() * 1024);
-            
-            ProcessBuilder pb = new ProcessBuilder(
-                "java",
-                "-Xmx" + ramMB + "M",
-                "-Xms1G",
-                "-Djava.library.path=" + APPDATA + "/natives",
-                "-DFabricMcEmu=net.minecraft.client.main.Main",
-                "-cp", getClasspath(),
-                "net.fabricmc.loader.impl.launch.knot.KnotClient",
-                "--username", username,
-                "--version", "1.21.5",
-                "--gameDir", APPDATA,
-                "--assetsDir", APPDATA + "/assets",
-                "--assetIndex", "24",
-                "--uuid", "00000000-0000-0000-0000-000000000000",
-                "--accessToken", "0",
-                "--userType", "legacy"
-            );
-            
-            pb.directory(new File(APPDATA));
-            pb.start();
-            
+        Task<Void> gameStartTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                String username = nameField.getText().trim();
+                int ramMB = (int) (ramSlider.getValue() * 1024);
+                
+                // Build complete classpath
+                String classpath = getClasspath();
+                
+                // Build launch command
+                List<String> command = new ArrayList<>();
+                command.add("java");
+                command.add("-Xmx" + ramMB + "M");
+                command.add("-Xms1G");
+                command.add("-Djava.library.path=" + APPDATA + "/natives");
+                command.add("-Dminecraft.launcher.brand=TerraMonic");
+                command.add("-Dminecraft.launcher.version=1.0.0");
+                command.add("-DFabricMcEmu=net.minecraft.client.main.Main");
+                command.add("-cp");
+                command.add(classpath);
+                command.add("net.fabricmc.loader.impl.launch.knot.KnotClient");
+                command.add("--username");
+                command.add(username);
+                command.add("--version");
+                command.add("1.21.5");
+                command.add("--gameDir");
+                command.add(APPDATA);
+                command.add("--assetsDir");
+                command.add(APPDATA + "/assets");
+                command.add("--assetIndex");
+                command.add(getAssetIndexId());
+                command.add("--uuid");
+                command.add("00000000-0000-0000-0000-000000000000");
+                command.add("--accessToken");
+                command.add("0");
+                command.add("--userType");
+                command.add("legacy");
+                
+                // Create process
+                ProcessBuilder pb = new ProcessBuilder(command);
+                pb.directory(new File(APPDATA));
+                pb.redirectErrorStream(true);
+                
+                // Set environment variables
+                Map<String, String> env = pb.environment();
+                env.put("JAVA_HOME", System.getProperty("java.home"));
+                
+                // Start the process
+                Process process = pb.start();
+                
+                // Wait a bit to see if it starts successfully
+                Thread.sleep(3000);
+                
+                if (process.isAlive()) {
+                    updateMessage("Oyun başlatıldı!");
+                } else {
+                    // Process died, check exit code
+                    int exitCode = process.exitValue();
+                    if (exitCode != 0) {
+                        // Read error output
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                            StringBuilder error = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                error.append(line).append("\n");
+                            }
+                            throw new RuntimeException("Oyun başlatılamadı (Exit Code: " + exitCode + ")\n" + error.toString());
+                        }
+                    }
+                }
+                
+                return null;
+            }
+        };
+        
+        gameStartTask.setOnSucceeded(e -> Platform.runLater(() -> {
             statusLabel.setText("Oyun başlatıldı!");
             statusLabel.setTextFill(Color.LIGHTGREEN);
             
-        } catch (Exception e) {
-            statusLabel.setText("Oyun başlatılamadı: " + e.getMessage());
+            // Show success animation
+            ScaleTransition successScale = new ScaleTransition(Duration.millis(300), statusLabel);
+            successScale.setFromX(1.0);
+            successScale.setFromY(1.0);
+            successScale.setToX(1.2);
+            successScale.setToY(1.2);
+            successScale.setAutoReverse(true);
+            successScale.setCycleCount(2);
+            successScale.play();
+        }));
+        
+        gameStartTask.setOnFailed(e -> Platform.runLater(() -> {
+            Throwable exception = gameStartTask.getException();
+            statusLabel.setText("Hata: " + exception.getMessage());
             statusLabel.setTextFill(Color.RED);
-        }
+            
+            // Show error dialog
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Oyun Başlatma Hatası");
+            alert.setHeaderText("Minecraft başlatılamadı!");
+            alert.setContentText(exception.getMessage());
+            alert.showAndWait();
+        }));
+        
+        new Thread(gameStartTask).start();
     }
 
     private String getClasspath() {
@@ -781,21 +853,54 @@ public class TerraMonicLauncher extends Application {
         // Add main jar
         classpathParts.add(APPDATA + "/versions/1.21.5/1.21.5.jar");
         
-        // Add libraries (simplified)
-        String[] libraryPaths = {
+        // Add all libraries from libraries directory
+        try {
+            Path libDir = Paths.get(APPDATA + "/libraries");
+            if (Files.exists(libDir)) {
+                Files.walk(libDir)
+                    .filter(path -> path.toString().endsWith(".jar"))
+                    .forEach(path -> classpathParts.add(path.toString()));
+            }
+        } catch (IOException e) {
+            System.err.println("Error scanning libraries: " + e.getMessage());
+        }
+        
+        // Add essential libraries manually if not found
+        String[] essentialLibs = {
             "net/fabricmc/fabric-loader/0.16.14/fabric-loader-0.16.14.jar",
             "net/fabricmc/sponge-mixin/0.15.5+mixin.0.8.7/sponge-mixin-0.15.5+mixin.0.8.7.jar",
-            // Add more libraries as needed
+            "net/fabricmc/intermediary/1.21.5/intermediary-1.21.5.jar",
+            "org/ow2/asm/asm/9.8/asm-9.8.jar",
+            "org/ow2/asm/asm-tree/9.8/asm-tree-9.8.jar",
+            "org/ow2/asm/asm-commons/9.8/asm-commons-9.8.jar",
+            "org/ow2/asm/asm-analysis/9.8/asm-analysis-9.8.jar",
+            "org/ow2/asm/asm-util/9.8/asm-util-9.8.jar"
         };
         
-        for (String libPath : libraryPaths) {
+        for (String libPath : essentialLibs) {
             Path fullPath = Paths.get(APPDATA + "/libraries/" + libPath);
-            if (Files.exists(fullPath)) {
+            if (Files.exists(fullPath) && !classpathParts.contains(fullPath.toString())) {
                 classpathParts.add(fullPath.toString());
             }
         }
         
         return String.join(System.getProperty("path.separator"), classpathParts);
+    }
+
+    private String getAssetIndexId() {
+        try {
+            Path versionJsonPath = Paths.get(APPDATA + "/versions/1.21.5/1.21.5.json");
+            if (Files.exists(versionJsonPath)) {
+                String content = Files.readString(versionJsonPath);
+                JsonObject versionData = gson.fromJson(content, JsonObject.class);
+                if (versionData.has("assetIndex")) {
+                    return versionData.getAsJsonObject("assetIndex").get("id").getAsString();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting asset index ID: " + e.getMessage());
+        }
+        return "24"; // Default fallback for 1.21.5
     }
 
     public static void main(String[] args) {

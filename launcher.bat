@@ -1,0 +1,34 @@
+@echo off
+title TerraMonic Launcher
+color 0B
+
+echo.
+echo  ████████╗███████╗██████╗ ██████╗  █████╗ ███╗   ███╗ ██████╗ ███╗   ██╗██╗ ██████╗
+echo  ╚══██╔══╝██╔════╝██╔══██╗██╔══██╗██╔══██╗████╗ ████║██╔═══██╗████╗  ██║██║██╔════╝
+echo     ██║   █████╗  ██████╔╝██████╔╝███████║██╔████╔██║██║   ██║██╔██╗ ██║██║██║     
+echo     ██║   ██╔══╝  ██╔══██╗██╔══██╗██╔══██║██║╚██╔╝██║██║   ██║██║╚██╗██║██║██║     
+echo     ██║   ███████╗██║  ██║██║  ██║██║  ██║██║ ╚═╝ ██║╚██████╔╝██║ ╚████║██║╚██████╗
+echo     ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝ ╚═════╝
+echo.
+echo                          🎮 Modern Minecraft Launcher 🎮
+echo.
+
+REM Maven ile çalıştır
+mvn clean javafx:run
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ❌ HATA! Launcher baslatirken sorun olustu.
+    echo.
+    echo 💡 Cozumler:
+    echo    1. Java 17+ yuklu oldugunu kontrol edin
+    echo    2. Maven yuklu oldugunu kontrol edin  
+    echo    3. Internet baglantinizi kontrol edin
+    echo.
+    pause
+    exit /b 1
+)
+
+echo.
+echo ✅ Launcher kapatildi.
+pause

@@ -40,8 +40,13 @@ echo.
 echo 📦 Maven ile calistirilyor...
 echo.
 
+REM Compile first
+echo Derleniyor...
+mvn clean compile -q
+
 REM Run with Maven
-mvn clean javafx:run
+echo Launcher baslatiliyor...
+mvn javafx:run
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
