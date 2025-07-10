@@ -16,10 +16,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.layout.Priority;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -40,6 +42,7 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.List;
 import java.util.*;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -405,27 +408,296 @@ public class TerraMonicLauncher1 extends Application {
     }
 
     private void showSplashScreen() {
+        // Logo ve splash screen UI oluştur
+        ImageView logoView = new ImageView();
+        if (launcherIcon != null && !launcherIcon.isError()) {
+            logoView.setImage(launcherIcon);
+        }
+        logoView.setFitWidth(240);
+        logoView.setFitHeight(240);
+        logoView.setPreserveRatio(true);
+
+        // Glow efekti
+        Glow glow = new Glow();
+        glow.setLevel(0.3);
+        logoView.setEffect(glow);
+
+        // Alt başlık
+        Label subtitle = new Label("TerraMonic Launcher " + currentLauncherVersion);
+        subtitle.setFont(Font.font(FONT_FAMILY, FontWeight.LIGHT, 24));
+        subtitle.setTextFill(PRIMARY_COLOR);
+
+        // Yükleniyor göstergesi
+        ProgressBar loadingBar = new ProgressBar(0);
+        loadingBar.setPrefWidth(300);
+        loadingBar.setStyle("-fx-accent: " + toHexString(PRIMARY_COLOR) + ";");
+
+        // Durum etiketi
+        Label loadingLabel = new Label("Başlatılıyor...");
+        loadingLabel.setTextFill(TEXT_SECONDARY);
+        loadingLabel.setFont(Font.font(FONT_FAMILY, 14));
+
+        // Düzenleme
+        VBox centerContent = new VBox(30);
+        centerContent.setAlignment(Pos.CENTER);
+        centerContent.getChildren().addAll(logoView, subtitle, new VBox(20), loadingBar, loadingLabel);
+
+        // Arka plan
+        AnchorPane decorPane = createDecorativeBackground();
+
+        // Ana panel
+        StackPane root = new StackPane();
+        root.setBackground(new Background(new BackgroundFill(BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
+        root.getChildren().addAll(decorPane, centerContent);
+
+        // Sahne oluştur
+        Scene splashScene = new Scene(root, windowWidth, windowHeight);
+        splashScene.setFill(BACKGROUND_COLOR);
+        mainStage.setScene(splashScene);
+        currentScene = splashScene;
+
+        // Setup task
         Task<Void> setupTask = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                Platform.runLater(() -> statusLabel.setText("Modrinth modları indiriliyor..."));
+                Platform.runLater(() -> {
+                    loadingBar.setProgress(0.1);
+                    loadingLabel.setText("Modrinth modları indiriliyor...");
+                });
+                
                 downloadAndInstallModrinthPack();
+                
+                Platform.runLater(() -> {
+                    loadingBar.setProgress(0.9);
+                    loadingLabel.setText("Launcher hazırlanıyor...");
+                });
+                
+                Thread.sleep(1000); // Loading simulation
+                
+                Platform.runLater(() -> {
+                    loadingBar.setProgress(1.0);
+                    loadingLabel.setText("Tamamlandı!");
+                });
+                
                 return null;
             }
         };
         
         setupTask.setOnSucceeded(e -> {
-            showLoginScreen();
+            // Fade out animasyonu
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.8), centerContent);
+            fadeOut.setFromValue(1);
+            fadeOut.setToValue(0);
+            fadeOut.setOnFinished(evt -> showLoginScreen());
+            fadeOut.play();
+        });
+        
+        setupTask.setOnFailed(e -> {
+            Throwable exception = setupTask.getException();
+            Platform.runLater(() -> {
+                loadingLabel.setText("Hata oluştu: " + exception.getMessage());
+                loadingLabel.setTextFill(Color.web("#FF3A3A"));
+            });
         });
         
         executorService.submit(setupTask);
     }
 
+    private AnchorPane createDecorativeBackground() {
+        AnchorPane decorPane = new AnchorPane();
+        
+        // Arka plan grid çizgileri
+        int lineCount = 20;
+        for (int i = 0; i < lineCount; i++) {
+            // Yatay çizgiler
+            Line hLine = new Line(0, (windowHeight / lineCount) * i, windowWidth, (windowHeight / lineCount) * i);
+            hLine.setStroke(Color.web("#222222", 0.3));
+            hLine.setStrokeWidth(0.5);
+
+            // Dikey çizgiler
+            Line vLine = new Line((windowWidth / lineCount) * i, 0, (windowWidth / lineCount) * i, windowHeight);
+            vLine.setStroke(Color.web("#222222", 0.3));
+            vLine.setStrokeWidth(0.5);
+
+            decorPane.getChildren().addAll(hLine, vLine);
+        }
+        
+        return decorPane;
+    }
+
     private void showLoginScreen() {
-        // Login screen UI burada oluşturulur
-        Platform.runLater(() -> {
-            transitionToMainScreen();
+        // Ana panel
+        BorderPane root = new BorderPane();
+        root.setBackground(new Background(new BackgroundFill(BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        // Arka plan dekoratif öğeler
+        AnchorPane decorPane = createDecorativeBackground();
+
+        // Sol panel - Logo
+        VBox leftPanel = new VBox();
+        leftPanel.setPadding(new Insets(50, 30, 50, 50));
+        leftPanel.setAlignment(Pos.CENTER_LEFT);
+        leftPanel.setMinWidth(windowWidth * 0.5);
+
+        // Logo
+        ImageView logoView = new ImageView();
+        if (launcherIcon != null && !launcherIcon.isError()) {
+            logoView.setImage(launcherIcon);
+            logoView.setFitWidth(180);
+            logoView.setFitHeight(180);
+            logoView.setPreserveRatio(true);
+            leftPanel.getChildren().add(logoView);
+        }
+
+        // Slogan
+        Label sloganLabel = new Label("Minecraft Deneyimini\nYeniden Keşfet");
+        sloganLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 32));
+        sloganLabel.setTextFill(TEXT_COLOR);
+        sloganLabel.setWrapText(true);
+
+        // Alt slogan
+        Label subSloganLabel = new Label("TerraMonic sunucularına özel, optimize edilmiş launcher ile\noyun deneyimini maksimuma çıkar.");
+        subSloganLabel.setFont(Font.font(FONT_FAMILY, 16));
+        subSloganLabel.setTextFill(TEXT_SECONDARY);
+        subSloganLabel.setWrapText(true);
+
+        leftPanel.getChildren().addAll(new VBox(20), sloganLabel, new VBox(10), subSloganLabel);
+
+        // Sağ panel - Giriş formu
+        VBox rightPanel = new VBox(20);
+        rightPanel.setPadding(new Insets(50));
+        rightPanel.setAlignment(Pos.CENTER);
+        rightPanel.setMinWidth(windowWidth * 0.5);
+        rightPanel.setStyle("-fx-background-color: " + toHexString(BACKGROUND_SECONDARY) + ";");
+
+        // Giriş başlığı
+        Label loginTitle = new Label("TerraMonic'e Hoşgeldiniz");
+        loginTitle.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 28));
+        loginTitle.setTextFill(PRIMARY_COLOR);
+
+        // Kullanıcı adı giriş alanı
+        TextField usernameField = createStyledTextField("Minecraft kullanıcı adınız");
+
+        // Checkbox
+        CheckBox rememberBox = new CheckBox("Kullanıcı adımı hatırla");
+        rememberBox.setFont(Font.font(FONT_FAMILY, 14));
+        rememberBox.setTextFill(TEXT_COLOR);
+        rememberBox.setSelected(rememberUser);
+
+        // Giriş butonu
+        Button loginButton = createStyledButton("GİRİŞ YAP", 200, 50);
+
+        // Giriş butonuna aksiyon ekle
+        loginButton.setOnAction(e -> {
+            playerName = usernameField.getText().trim();
+            rememberUser = rememberBox.isSelected();
+
+            if (playerName.isEmpty()) {
+                // Hata animasyonu
+                TranslateTransition shake = new TranslateTransition(Duration.millis(50), usernameField);
+                shake.setFromX(0);
+                shake.setByX(10);
+                shake.setCycleCount(6);
+                shake.setAutoReverse(true);
+                usernameField.setStyle(usernameField.getStyle() + "-fx-border-color: #FF3A3A;");
+                shake.play();
+                return;
+            }
+
+            // Giriş başarılı ise ana ekrana geç
+            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(100), loginButton);
+            scaleDown.setToX(0.9);
+            scaleDown.setToY(0.9);
+            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(100), loginButton);
+            scaleUp.setToX(1.0);
+            scaleUp.setToY(1.0);
+            scaleDown.setOnFinished(evt -> {
+                scaleUp.play();
+                transitionToMainScreen();
+            });
+            scaleDown.play();
         });
+
+        // Launcher versiyonu
+        Label versionLabel = new Label("TerraMonic Launcher " + currentLauncherVersion);
+        versionLabel.setFont(Font.font(FONT_FAMILY, 12));
+        versionLabel.setTextFill(TEXT_SECONDARY);
+
+        // Sağ paneli düzenle
+        rightPanel.getChildren().addAll(
+                loginTitle,
+                new VBox(30),
+                usernameField,
+                rememberBox,
+                new VBox(20),
+                loginButton,
+                new Region() {{
+                    VBox.setVgrow(this, Priority.ALWAYS);
+                }},
+                versionLabel
+        );
+
+        // Ana düzeni ayarla
+        StackPane mainContent = new StackPane();
+        mainContent.getChildren().addAll(decorPane);
+
+        HBox contentBox = new HBox();
+        contentBox.getChildren().addAll(leftPanel, rightPanel);
+        mainContent.getChildren().add(contentBox);
+
+        root.setCenter(mainContent);
+
+        // Yeni sahne oluştur ve animasyonla göster
+        Scene loginScene = new Scene(root, windowWidth, windowHeight);
+        loginScene.setFill(BACKGROUND_COLOR);
+
+        // Sahne geçişi yap
+        transitionToScene(loginScene);
+    }
+
+    private TextField createStyledTextField(String promptText) {
+        TextField textField = new TextField();
+        textField.setPromptText(promptText);
+        textField.setPrefHeight(45);
+        textField.setFont(Font.font(FONT_FAMILY, 14));
+        textField.setStyle(
+                "-fx-background-color: #1A1A1A;" +
+                "-fx-text-fill: white;" +
+                "-fx-prompt-text-fill: #555555;" +
+                "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                "-fx-border-radius: " + BUTTON_RADIUS + "px;" +
+                "-fx-border-color: #333333;" +
+                "-fx-border-width: 1px;" +
+                "-fx-padding: 10px;"
+        );
+
+        textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                textField.setStyle(
+                        "-fx-background-color: #1A1A1A;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-prompt-text-fill: #555555;" +
+                        "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-border-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-border-color: " + toHexString(PRIMARY_COLOR) + ";" +
+                        "-fx-border-width: 1.5px;" +
+                        "-fx-padding: 10px;"
+                );
+            } else {
+                textField.setStyle(
+                        "-fx-background-color: #1A1A1A;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-prompt-text-fill: #555555;" +
+                        "-fx-background-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-border-radius: " + BUTTON_RADIUS + "px;" +
+                        "-fx-border-color: #333333;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-padding: 10px;"
+                );
+            }
+        });
+
+        return textField;
     }
 
     private void transitionToMainScreen() {
