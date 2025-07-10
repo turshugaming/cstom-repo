@@ -1,267 +1,188 @@
-# 🔧 UltimateItemsAdder - 1.21.5 Minecraft Uyumluluk Güncellemesi
+# 🎮 TerraMonic Launcher - Modern Minecraft Fabric Launcher
 
-Bu README dosyası, **1.21.5 Minecraft** sürümüne uyumluluk için yapılan tüm değişiklikleri açıklar.
+> En havalı, en güzel, en modern Minecraft Fabric launcher'ı! Glassmorphism UI, animasyonlar, otomatik mod kurulumu ve daha fazlası!
 
-## 🚨 Ana Problem
-1.21.5 Minecraft sürümünde texture oluşuyordu ama item'lara assign edilmiyordu. Bu sorun aşağıdaki nedenlerden kaynaklanıyordu:
+## ✨ Özellikler
 
-1. **Eski Resource Pack Formatı** kullanılıyordu
-2. **Custom Model Data Assignment** eksikti
-3. **Base Item Model Update** sistemi eski formatı kullanıyordu
-4. **Pack Format Number** güncel değildi
+### 🎨 Modern UI & Efektler
+- **Glassmorphism** efektli arayüz
+- **Blur** efektli arkaplan
+- **Glow** ve **DropShadow** efektleri
+- **Animasyonlar** (fade, scale, rotate)
+- **800x600** pencere boyutu, köşeleri yuvarlak
+- **Şeffaf** pencere, özel window controls
 
-## ✅ Yapılan Güncellemeler
+### 🚀 Launcher Özellikleri
+- **Splashscreen** ile % ilerleme göstergesi
+- **Otomatik modpack indirme** (.mrpack desteği)
+- **Minecraft 1.21.5** + **Fabric Loader 0.16.14**
+- **Mod yönetimi** (ekleme, silme, profil yönetimi)
+- **RAM ayarı** (2-16GB slider)
+- **Arkaplan değiştirme** özelliği
+- **Bakım modu** desteği
+- **start.bat yerine direkt Java** başlatma
 
-### 1. 📦 `createItemStack()` Methodu Güncellendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~486-520)
+### 📦 Otomatik İndirmeler
+- TerraMonic Enhanced Beta modpack
+- Minecraft client + kütüphaneler
+- Assets dosyaları
+- Native dosyalar
+- Fabric kütüphaneleri
 
-#### Değişiklikler:
-- ✅ **Otomatik Custom Model Data Assignment** eklendi
-- ✅ **Registry-based Enchantment System** (1.21.5 uyumlu)
-- ✅ **Enhanced Persistent Data Container** kullanımı
-- ✅ **Model Data Reference** storage eklendi
+## 🛠️ Kurulum
 
-```java
-// Otomatik ID assignment (hash-based)
-if (customModelData > 0) {
-    meta.setCustomModelData(customModelData);
-} else {
-    int autoId = Math.abs(id.hashCode()) % 10000 + 1000;
-    meta.setCustomModelData(autoId);
-    customModelData = autoId;
+### Gereksinimler
+- **Java 17** veya üzeri
+- **Maven 3.6+**
+- **Windows** (APPDATA klasörü kullanılıyor)
+
+### 1. Projeyi İndir
+```bash
+git clone https://github.com/yourusername/terramonic-launcher.git
+cd terramonic-launcher
+```
+
+### 2. Kaynakları Ekle
+Aşağıdaki dosyaları `src/main/resources/com/terramonic/` klasörüne ekle:
+- `icon.png` - Launcher ikonu (80x80 önerilen)
+- `arkaplan.png` - Varsayılan arkaplan resmi 
+- `Gilroy-Bold.otf` - Font dosyası (opsiyonel)
+
+### 3. Derleme ve Çalıştırma
+```bash
+# Bağımlılıkları indir
+mvn clean install
+
+# Uygulamayı çalıştır
+mvn javafx:run
+
+# Veya JAR oluştur
+mvn clean package
+java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml -jar target/terramonic-launcher-1.0.0.jar
+```
+
+## � Kullanım
+
+### İlk Çalıştırma
+1. Uygulama açılır açılmaz **splashscreen** gelir
+2. **Modpack indirilir** ve kurulur (%0-100 ilerleme)
+3. **Minecraft dosyaları** indirilir
+4. **Ana ekran** açılır
+
+### Ana Ekran
+- **Kullanıcı adı** gir (zorunlu)
+- **Şifre** gir (opsiyonel)
+- **RAM** miktarını ayarla
+- **Mod yönetimi** ile modları ekle/sil
+- **Arkaplan** değiştir (🖼 butonu)
+- **OYNA** butonuna tıkla!
+
+### Pencere Kontrolleri
+- **─** Simge durumuna küçült
+- **✕** Uygulamayı kapat
+- **🖼** Arkaplan değiştir
+
+## � Dosya Yapısı
+
+```
+%APPDATA%/.terramonic/
+├── mods/                 # Modlar
+├── config/              # Config dosyaları
+├── versions/            # Minecraft sürümleri
+├── libraries/           # Kütüphaneler
+├── assets/              # Oyun varlıkları
+├── natives/             # Native dosyalar
+├── icon.png             # Launcher ikonu
+├── arkaplan.png         # Arkaplan resmi
+├── maintenance.json     # Bakım modu ayarları
+└── launcher_profiles.json
+```
+
+## ⚙️ Bakım Modu
+
+`%APPDATA%/.terramonic/maintenance.json` dosyasını düzenleyerek:
+
+```json
+{
+  "bakimmmodu": true,
+  "bakimmmodusebebi": "Sunucu güncellemesi yapılıyor..."
 }
 ```
 
-### 2. 🎨 `updateBaseItemModel()` Methodu 1.21.5 Formatına Güncellendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3611-3680)
+## 🎨 Özelleştirme
 
-#### Değişiklikler:
-- ✅ **Yeni 1.21.5 Model Format** kullanımı
-- ✅ **Integer-based when values** (eski string yerine)
-- ✅ **Enhanced fallback system** 
-- ✅ **Better case management**
+### Arkaplan Değiştirme
+- 🖼 butonuna tıkla
+- PNG/JPG dosyası seç
+- Otomatik blur efekti uygulanır
 
-```java
-// 1.21.5 Yeni base model format
-JsonObject modelWrapper = new JsonObject();
-modelWrapper.addProperty("type", "minecraft:select");
-modelWrapper.addProperty("property", "minecraft:custom_model_data");
+### RAM Ayarı
+- Alt kısımdaki slider ile 2-16GB arası
+- Otomatik olarak oyun başlatırken uygulanır
+
+### Mod Ekleme
+- "Mod Ekle" butonuna tıkla
+- .jar dosyası seç
+- `mods/` klasörüne kopyalanır
+
+## � Geliştirme
+
+### Proje Yapısı
+```
+src/
+├── main/
+│   ├── java/com/terramonic/
+│   │   ├── TerraMonicLauncher.java     # Ana launcher
+│   │   └── MinecraftFabricLauncher.java # Minecraft indirici
+│   └── resources/com/terramonic/
+│       ├── icon.png
+│       ├── arkaplan.png
+│       └── Gilroy-Bold.otf
+├── pom.xml                             # Maven config
+└── README.md
 ```
 
-### 3. 📋 `createPackMeta()` Pack Format Güncellendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3305-3350)
+### Teknolojiler
+- **JavaFX 21** - Modern UI
+- **Gson** - JSON işleme
+- **HttpClient** - Dosya indirme
+- **Maven** - Bağımlılık yönetimi
 
-#### Değişiklikler:
-- ✅ **Pack format 15** (1.21.5 için)
-- ✅ **Supported formats range** eklendi
-- ✅ **Enhanced filter** for better performance
+## � Sorun Giderme
 
-```java
-pack.addProperty("pack_format", 15); // 1.21.5 için
-
-// Supported formats
-JsonObject supportedFormats = new JsonObject();
-supportedFormats.addProperty("min_inclusive", 13);
-supportedFormats.addProperty("max_inclusive", 15);
-```
-
-### 4. 🖼️ `createItemModel()` Texture Handling İyileştirildi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3404-3474)
-
-#### Değişiklikler:
-- ✅ **Better parent model selection** (weapon type based)
-- ✅ **Enhanced texture fallback** system
-- ✅ **Gui light option** eklendi
-- ✅ **Proper directory structure** support
-
-```java
-// 1.21.5 Parent model selection
-switch (item.weaponType.toUpperCase()) {
-    case "SWORD": case "AXE": case "PICKAXE":
-        parent = "minecraft:item/handheld";
-        break;
-    case "BOW":
-        parent = "minecraft:item/bow";
-        break;
-}
-```
-
-### 5. 🎨 `createDefaultTextures()` Kalite İyileştirmesi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~3709-3782)
-
-#### Değişiklikler:
-- ✅ **Anti-aliasing support**
-- ✅ **Gradient backgrounds** with rarity colors
-- ✅ **Item type indicators** (kılıç, alet simgeleri)
-- ✅ **Proper item texture directory** structure
-
-```java
-// Anti-aliasing aktif
-g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-// Gradient arka plan
-GradientPaint gradient = new GradientPaint(0, 0, color1, 16, 16, color2);
-```
-
-### 6. 🧪 Yeni Test Sistemi Eklendi
-**Dosya:** `UltimateItemsAdder.java` (Satır ~6229-6282)
-
-#### Özellikler:
-- ✅ **`/ui test <item_id>`** komutu eklendi
-- ✅ **Detaylı test bilgileri** gösterimi
-- ✅ **Resource pack durumu** kontrolü
-- ✅ **Test sonuçları** yorumlama kılavuzu
-
+### JavaFX Bulunamıyor
 ```bash
-# Kullanım
-/ui test flame_sword
-
-# Çıktı
-✓ Test item verildi!
-=== Test Bilgileri ===
-Item ID: flame_sword
-Custom Model Data: 1001
-Texture: flame_sword
-Model: flame_sword
-Base Material: IRON_SWORD
+# JavaFX modüllerini manuel ekle
+java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml -jar launcher.jar
 ```
 
-## 🔄 Değişen Dosya Yapısı
+### Modpack İndirilemiyor
+- İnternet bağlantınızı kontrol edin
+- Firewall ayarlarını kontrol edin
+- Antivirüs yazılımını geçici olarak kapatın
 
-### Önceki Yapı:
-```
-plugins/UltimateItemsAdder/
-├── textures/
-│   ├── flame_sword.png
-│   └── ice_bow.png
-└── resource_pack/
-    └── assets/minecraft/models/item/
-```
+### Oyun Başlatılamıyor
+- Java 17+ kurulu olduğundan emin olun
+- %APPDATA%/.terramonic klasörünü silin ve tekrar deneyin
+- "Onar" butonuna tıklayın
 
-### Yeni Yapı (1.21.5):
-```
-plugins/UltimateItemsAdder/
-├── textures/
-│   └── item/                    # 🆕 item klasörü zorunlu
-│       ├── flame_sword.png
-│       └── ice_bow.png
-└── resource_pack/
-    └── assets/
-        ├── minecraft/models/item/
-        └── ultimateitems/         # 🆕 namespace klasörü
-            ├── models/item/
-            └── textures/item/
-```
+## 📝 Lisans
 
-## 🚀 Kullanım Kılavuzu
+Bu proje MIT lisansı altında lisanslanmıştır.
 
-### 1. Plugin'i Test Et
-```bash
-# Resource pack'i yeniden oluştur
-/ui pack regenerate
+## 🤝 Katkıda Bulunma
 
-# Test item oluştur
-/ui test flame_sword
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'Add amazing feature'`)
+4. Branch'i push yapın (`git push origin feature/amazing-feature`)
+5. Pull Request açın
 
-# Reload plugin
-/ui reload
-```
+## 📞 İletişim
 
-### 2. Yeni Item Oluştur
-```bash
-# Yeni item oluştur
-/ui create my_sword IRON_SWORD
-
-# Custom model data ayarla
-/ui edit my_sword modeldata 1500
-
-# Texture ayarla
-/ui edit my_sword texture my_sword
-```
-
-### 3. Texture Dosyalarını Yerleştir
-```bash
-# Texture dosyalarını koy
-plugins/UltimateItemsAdder/textures/item/my_sword.png
-
-# Resource pack'i yeniden oluştur
-/ui pack regenerate
-```
-
-## 🔍 Debug ve Sorun Giderme
-
-### Problem: Texture Görünmüyor
-```bash
-# 1. Test komutu kullan
-/ui test <item_id>
-
-# 2. Debug mode aç
-/ui debug on
-
-# 3. Resource pack durumunu kontrol et
-/ui pack status
-
-# 4. Pack'i yeniden oluştur
-/ui pack regenerate
-```
-
-### Problem: Custom Model Data Çalışmıyor
-```bash
-# 1. Model data kontrolü
-/ui info <item_id>
-
-# 2. Base material kontrolü
-/ui edit <item_id> material IRON_SWORD
-
-# 3. Model data reset
-/ui edit <item_id> modeldata 0  # otomatik assign için
-```
-
-## 📋 Uyumluluk Tablosu
-
-| Minecraft Sürümü | Pack Format | Durum |
-|-------------------|-------------|-------|
-| 1.20.4 | 22 | ❌ Eski |
-| 1.21.0 | 34 | ⚠️ Kısmen |
-| 1.21.3 | 34 | ⚠️ Kısmen |
-| 1.21.4 | 32 | ⚠️ Kısmen |
-| **1.21.5** | **15** | ✅ **Tam Uyumlu** |
-
-## 💡 Öneriler
-
-### 1. Performans İyileştirmeleri
-- ✅ Texture dosyalarını **16x16 PNG** olarak kullanın
-- ✅ **Item klasör yapısını** doğru oluşturun
-- ✅ **Model data range'i** 1000-9999 arası kullanın
-
-### 2. Best Practices
-- ✅ **Test komutu** ile her item'i kontrol edin
-- ✅ **Backup** alın (`/ui backup`)
-- ✅ **Resource pack'i** düzenli güncelleyin
-
-### 3. Troubleshooting
-- ❗ **Client cache** temizleyin (F3+T)
-- ❗ **Server restart** yapın
-- ❗ **Player resource pack** durumunu kontrol edin
-
-## 🎯 Sonuç
-
-Bu güncelleme ile **1.21.5 Minecraft** sürümünde:
-
-✅ **Texture Assignment** tamamen çalışır  
-✅ **Custom Model Data** doğru assign edilir  
-✅ **Resource Pack** format uyumlu olur  
-✅ **Performance** optimize edilir  
-✅ **Debug Tools** ile kolay troubleshooting  
-
-**Tüm değişiklikler backward compatible'dır** ve eski item'ler otomatik olarak yeni sisteme geçer.
+- **Discord**: TerraMonic Community
+- **GitHub**: [Issues](https://github.com/yourusername/terramonic-launcher/issues)
 
 ---
 
-## 📞 Destek
-
-Sorun yaşarsan:
-1. **Test komutu** kullan: `/ui test <item_id>`
-2. **Debug mode** aç: `/ui debug on`
-3. **Log dosyalarını** kontrol et
-4. **Resource pack'i** yeniden oluştur: `/ui pack regenerate`
+🎮 **TerraMonic - En havalı Minecraft deneyimi için!** ✨
